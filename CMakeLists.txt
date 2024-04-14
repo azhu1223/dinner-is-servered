@@ -36,9 +36,12 @@ include_directories(include)
 
 # TODO(!): Update name and srcs
 # add_library(server_main_lib src/server_main.cc) fix this later, after refactoring
+add_library(server_lib src/server.cc)
+add_library(session_lib src/session.cc)
 
 # TODO(!): Update executable name, srcs, and deps
-add_executable(server_main src/server_main.cc)
+add_executable(server src/main.cc)
+target_link_libraries(server server_lib session_lib Boost::system)
 # target_link_libraries(example_server example_lib Boost::system)
 
 # TODO(!): Update test executable name, srcs, and deps
