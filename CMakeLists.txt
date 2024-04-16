@@ -4,15 +4,15 @@ project(dinner-is-servered)
 # Make sure developers do not run cmake in the main project directory, to keep
 # build artifacts from becoming clutter
 if (${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_BINARY_DIR})
-    message(FATAL_ERROR "In-source builds not allowed.
-    Please make a new directory (called a build directory) and run CMake from there.
-    You may need to remove CMakeCache.txt." )
+message(FATAL_ERROR "In-source builds not allowed.
+Please make a new directory (called a build directory) and run
+CMake from there.You may need to remove CMakeCache.txt." )
 endif()
 
 # Turn on debug builds if we are building in a devel shell
 if (CMAKE_BUILD_TYPE STREQUAL "" AND "$ENV{DEVEL_SHELL}" STREQUAL "1")
-    message(STATUS "Setting debug build type by default in devel shell")
-    set(CMAKE_BUILD_TYPE Debug)
+message(STATUS "Setting debug build type by default in devel shell")
+set(CMAKE_BUILD_TYPE Debug)
 endif()
 
 # Output binaries to a sub directory "bin"
@@ -34,19 +34,20 @@ message(STATUS "Boost version: ${Boost_VERSION}")
 
 include_directories(include)
 
-# TODO(!): Update name and srcs
-# add_library(server_main_lib src/server_main.cc) fix this later, after refactoring
+# Libraries
 add_library(server_lib src/server.cc)
 add_library(session_lib src/session.cc)
+add_library(config_parser_lib src/config_parser.cc)
 
-# TODO(!): Update executable name, srcs, and deps
+
+# Executables and target Llbraries
 add_executable(server src/main.cc)
-target_link_libraries(server server_lib session_lib Boost::system)
-# target_link_libraries(example_server example_lib Boost::system)
+target_link_libraries(server server_lib config_parser_lib session_lib Boost::system)
 
-# TODO(!): Update test executable name, srcs, and deps
-# add_executable(example_lib_test tests/example_lib_test.cc)
-# target_link_libraries(example_lib_test example_lib gtest_main)
+
+#add_executable(config_parser_test tests/config_parser_test.cc)
+#target_link_libraries(config_parser_test config_parser_lib gtest_main)
+
 
 # TODO(!): Update with test binary
 # gtest_discover_tests(example_lib_test WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tests)
