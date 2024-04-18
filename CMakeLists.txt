@@ -38,15 +38,16 @@ include_directories(include)
 add_library(server_lib src/server.cc)
 add_library(session_lib src/session.cc)
 add_library(config_parser_lib src/config_parser.cc)
+add_library(config_interpreter_lib src/config_interpreter.cc)
 
 
 # Executables and target Llbraries
 add_executable(server src/main.cc)
-target_link_libraries(server server_lib config_parser_lib session_lib Boost::system)
+target_link_libraries(server server_lib config_parser_lib config_interpreter_lib session_lib Boost::system)
 
 
 #add_executable(config_parser_test tests/config_parser_test.cc)
-#target_link_libraries(config_parser_test config_parser_lib gtest_main)
+#target_link_libraries(config_parser_test config_parser_lib config_interpreter_lib gtest_main)
 
 
 # TODO(!): Update with test binary

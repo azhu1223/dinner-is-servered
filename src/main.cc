@@ -1,6 +1,7 @@
 #include <iostream>
 #include "server.h"
 #include "config_parser.h"
+#include "config_interpreter.h"
 
 int main(int argc, char* argv[]) {
     try {
@@ -19,23 +20,8 @@ int main(int argc, char* argv[]) {
             return 1;
         }
 
-        // Default port is 80
-        int port = 80;
+        server s(io_service, getPort(config));
 
-        for (const auto& statement : config.statements_) {
-            // Find the server statement
-            if (statement->tokens_[0] == "server") {
-                for (const auto& nestedStatement : statement->child_block_->statements_) {
-                    // Find the listen statement
-                    if (nestedStatement->tokens_[0] == "listen") {
-                        port = std::stoi(nestedStatement->tokens_[1]);
-                    }
-                }
-            }
-        }
-
-        std::cout << "Port is " << port << std::endl;
-        server s(io_service, port);
         s.run();
     } catch (const std::exception& e) {
         std::cerr << "Exception: " << e.what() << "\n";
