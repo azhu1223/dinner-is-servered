@@ -15,6 +15,15 @@ message(STATUS "Setting debug build type by default in devel shell")
 set(CMAKE_BUILD_TYPE Debug)
 endif()
 
+# Check if the build type is set for coverage
+if(CMAKE_BUILD_TYPE STREQUAL "Coverage")
+    message(STATUS "Configuring build for coverage")
+    # Add flags for GCC to generate coverage data
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fprofile-arcs -ftest-coverage")
+    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -fprofile-arcs -ftest-coverage")
+endif()
+
+
 # Output binaries to a sub directory "bin"
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
@@ -56,3 +65,15 @@ target_link_libraries(server server_lib config_parser_lib config_interpreter_lib
 # TODO(!): Update with target/test targets
 # include(cmake/CodeCoverageReportConfig.cmake)
 # generate_coverage_report(TARGETS example_server example_lib TESTS example_lib_test)
+
+
+# Adding a custom target for generating the coverage report
+add_custom_target(coverage
+    COMMAND echo "Running tests..."
+    COMMAND ${CMAKE_CTEST_COMMAND} -C $<CONFIGURATION>
+    COMMAND echo "Generating coverage report..."
+    COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/coverage_report
+    COMMAND gcovr -r ${CMAKE_SOURCE_DIR} --html --html-details -o ${CMAKE_BINARY_DIR}/coverage_report/coverage-report.html
+    WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+    COMMENT "Coverage report generated in ${CMAKE_BINARY_DIR}/coverage_report/."
+)
