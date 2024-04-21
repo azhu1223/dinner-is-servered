@@ -56,6 +56,9 @@ add_library(response_handler_lib src/response_handler.cc)
 add_executable(server src/_main.cc)
 target_link_libraries(server  server_lib config_parser_lib config_interpreter_lib session_lib response_handler_lib Boost::system)
 
+# Add Integration Tests
+add_test(NAME web_test COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/tests/integration_tests.py WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tests)
+
 
 #Test Executables and Target Libraries
 
