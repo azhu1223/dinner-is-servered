@@ -23,4 +23,16 @@ steps:
     '-t', 'gcr.io/$PROJECT_ID/dinner-is-servered:latest',
     '.'
   ]
-images: ['gcr.io/$PROJECT_ID/dinner-is-servered:base', 'gcr.io/$PROJECT_ID/dinner-is-servered:latest']
+
+
+- name: 'gcr.io/cloud-builders/docker'
+  args: [
+    'build',
+    '-f', 'docker/coverage.Dockerfile',
+    '-t', 'gcr.io/$PROJECT_ID/dinner-is-servered:coverage',
+    '.'
+  ]
+
+
+
+images: ['gcr.io/$PROJECT_ID/dinner-is-servered:base', 'gcr.io/$PROJECT_ID/dinner-is-servered:latest', 'gcr.io/$PROJECT_ID/dinner-is-servered:coverage']
