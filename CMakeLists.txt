@@ -55,25 +55,13 @@ add_executable(server src/main.cc)
 target_link_libraries(server server_lib config_parser_lib config_interpreter_lib session_lib Boost::system)
 
 
-#add_executable(config_parser_test tests/config_parser_test.cc)
-#target_link_libraries(config_parser_test config_parser_lib config_interpreter_lib gtest_main)
+add_executable(config_parser_test tests/config_parser_test.cc)
+target_link_libraries(config_parser_test config_parser_lib config_interpreter_lib gtest_main)
 
 
-# TODO(!): Update with test binary
-# gtest_discover_tests(example_lib_test WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tests)
+# Test Discovery
+gtest_discover_tests(config_parser_test WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tests)
 
 # TODO(!): Update with target/test targets
-# include(cmake/CodeCoverageReportConfig.cmake)
-# generate_coverage_report(TARGETS example_server example_lib TESTS example_lib_test)
-
-
-# Adding a custom target for generating the coverage report
-add_custom_target(coverage
-    COMMAND echo "Running tests..."
-    COMMAND ${CMAKE_CTEST_COMMAND} -C $<CONFIGURATION>
-    COMMAND echo "Generating coverage report..."
-    COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/coverage_report
-    COMMAND gcovr -r ${CMAKE_SOURCE_DIR} --html --html-details -o ${CMAKE_BINARY_DIR}/coverage_report/coverage-report.html
-    WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
-    COMMENT "Coverage report generated in ${CMAKE_BINARY_DIR}/coverage_report/."
-)
+include(cmake/CodeCoverageReportConfig.cmake)
+generate_coverage_report(TARGETS config_parser_lib TESTS config_parser_test)
