@@ -48,11 +48,13 @@ add_library(server_lib src/server.cc)
 add_library(session_lib src/session.cc)
 add_library(config_parser_lib src/config_parser.cc)
 add_library(config_interpreter_lib src/config_interpreter.cc)
+add_library(response_handler_lib src/response_handler.cc)
+
 
 
 # Executables and target Libraries
 add_executable(server src/main.cc)
-target_link_libraries(server server_lib config_parser_lib config_interpreter_lib session_lib Boost::system)
+target_link_libraries(server  server_lib config_parser_lib config_interpreter_lib session_lib response_handler_lib Boost::system)
 
 
 #Test Executables and Target Libraries
@@ -63,12 +65,15 @@ target_link_libraries(config_interpreter_test config_parser_lib config_interpret
 add_executable(config_parser_test tests/config_parser_test.cc)
 target_link_libraries(config_parser_test config_parser_lib config_interpreter_lib gtest_main)
 
+add_executable(response_handler_test tests/response_handler_test.cc)
+target_link_libraries(response_handler_test response_handler_lib gtest_main)
 
 #Discover tests
 gtest_discover_tests(config_parser_test WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tests)
 gtest_discover_tests(config_interpreter_test WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tests)
+gtest_discover_tests(response_handler_test WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tests)
 
 
 # Generate Coverage Report
 include(cmake/CodeCoverageReportConfig.cmake)
-generate_coverage_report(TARGETS config_parser_lib config_interpreter_lib TESTS config_parser_test config_interpreter_test)
+generate_coverage_report(TARGETS config_parser_lib config_interpreter_lib response_handler_lib TESTS config_parser_test config_interpreter_test  response_handler_test)

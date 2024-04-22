@@ -13,7 +13,6 @@ public:
 private:
     void handle_read(const boost::system::error_code& error, size_t bytes_transferred);
     void handle_write(const boost::system::error_code& error);
-    std::vector<char> create_response(short bytes_transferred);
 
     boost::asio::ip::tcp::socket socket_;
     enum { max_length = 1024 };
