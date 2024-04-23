@@ -53,7 +53,7 @@ add_library(response_handler_lib src/response_handler.cc)
 
 
 # Executables and target Libraries
-add_executable(server src/main.cc)
+add_executable(server src/_main.cc)
 target_link_libraries(server  server_lib config_parser_lib config_interpreter_lib session_lib response_handler_lib Boost::system)
 
 
@@ -76,4 +76,4 @@ gtest_discover_tests(response_handler_test WORKING_DIRECTORY ${CMAKE_CURRENT_SOU
 
 # Generate Coverage Report
 include(cmake/CodeCoverageReportConfig.cmake)
-generate_coverage_report(TARGETS config_parser_lib config_interpreter_lib response_handler_lib TESTS config_parser_test config_interpreter_test  response_handler_test)
+generate_coverage_report(TARGETS server_lib session_lib config_parser_lib config_interpreter_lib response_handler_lib TESTS config_parser_test config_interpreter_test  response_handler_test)
