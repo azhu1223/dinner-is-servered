@@ -56,7 +56,6 @@ add_library(response_handler_lib src/response_handler.cc)
 add_executable(server src/_main.cc)
 target_link_libraries(server  server_lib config_parser_lib config_interpreter_lib session_lib response_handler_lib Boost::system)
 
-
 #Test Executables and Target Libraries
 
 add_executable(config_interpreter_test tests/config_interpreter_test.cc)
@@ -67,6 +66,13 @@ target_link_libraries(config_parser_test config_parser_lib config_interpreter_li
 
 add_executable(response_handler_test tests/response_handler_test.cc)
 target_link_libraries(response_handler_test response_handler_lib gtest_main)
+
+# Add Integration Tests
+add_test(NAME IntegrationTests.example_config COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/tests/integration_tests/integration_test_example_config.py ${CMAKE_CURRENT_BINARY_DIR}/bin/server WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tests/integration_tests/)
+add_test(NAME IntegrationTests.empty_config COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/tests/integration_tests/integration_test_empty_config.py ${CMAKE_CURRENT_BINARY_DIR}/bin/server WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tests/integration_tests/)
+add_test(NAME IntegrationTests.missing_closing_parens COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/tests/integration_tests/integration_test_missing_closing_parentheses.py ${CMAKE_CURRENT_BINARY_DIR}/bin/server WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tests/integration_tests/)
+add_test(NAME IntegrationTests.empty_brackets COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/tests/integration_tests/integration_test_empty_brackets.py ${CMAKE_CURRENT_BINARY_DIR}/bin/server WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tests/integration_tests/)
+add_test(NAME IntegrationTests.multiple_end_brackets COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/tests/integration_tests/integration_test_multiple_end_brackets.py ${CMAKE_CURRENT_BINARY_DIR}/bin/server WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tests/integration_tests/)
 
 #Discover tests
 gtest_discover_tests(config_parser_test WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tests)
