@@ -40,3 +40,72 @@ TEST_F(NginxConfigInterpreterTest, CorrectPortFound) {
     //Assertion
     EXPECT_EQ(port, std::stoi(expected_port));
 }
+
+//Out of range (for port values) port, should set to 80
+TEST_F(NginxConfigInterpreterTest, OutOfRangePort) {
+    //Setup
+    const std::string input_port = "9999999";
+    const int expected_port = 80;
+    config = new NginxConfig;
+    NginxConfigStatement* server_statement = new NginxConfigStatement;
+    config->statements_.emplace_back(server_statement);
+    server_statement->tokens_.emplace_back("server");
+    NginxConfig* server_config = new NginxConfig;
+    server_statement->child_block_.reset(server_config);
+    NginxConfigStatement* port_statement = new NginxConfigStatement;
+    server_config->statements_.emplace_back(port_statement);
+    port_statement->tokens_.emplace_back("listen");
+    port_statement->tokens_.emplace_back(input_port);
+
+    //Execution
+    int port = getPort(*config);
+    
+    //Assertion
+    EXPECT_EQ(port, expected_port);
+}
+
+//Out of range (integer) port, should set to 80
+TEST_F(NginxConfigInterpreterTest, OutOfRangeInt) {
+    //Setup
+    const std::string input_port = "99999999999999999999999";
+    const int expected_port = 80;
+    config = new NginxConfig;
+    NginxConfigStatement* server_statement = new NginxConfigStatement;
+    config->statements_.emplace_back(server_statement);
+    server_statement->tokens_.emplace_back("server");
+    NginxConfig* server_config = new NginxConfig;
+    server_statement->child_block_.reset(server_config);
+    NginxConfigStatement* port_statement = new NginxConfigStatement;
+    server_config->statements_.emplace_back(port_statement);
+    port_statement->tokens_.emplace_back("listen");
+    port_statement->tokens_.emplace_back(input_port);
+
+    //Execution
+    int port = getPort(*config);
+    
+    //Assertion
+    EXPECT_EQ(port, expected_port);
+}
+
+//Non integer port should set to 80
+TEST_F(NginxConfigInterpreterTest, NonIntegerPort) {
+    //Setup
+    const std::string input_port = "foo";
+    const int expected_port = 80;
+    config = new NginxConfig;
+    NginxConfigStatement* server_statement = new NginxConfigStatement;
+    config->statements_.emplace_back(server_statement);
+    server_statement->tokens_.emplace_back("server");
+    NginxConfig* server_config = new NginxConfig;
+    server_statement->child_block_.reset(server_config);
+    NginxConfigStatement* port_statement = new NginxConfigStatement;
+    server_config->statements_.emplace_back(port_statement);
+    port_statement->tokens_.emplace_back("listen");
+    port_statement->tokens_.emplace_back(input_port);
+
+    //Execution
+    int port = getPort(*config);
+    
+    //Assertion
+    EXPECT_EQ(port, expected_port);
+}
