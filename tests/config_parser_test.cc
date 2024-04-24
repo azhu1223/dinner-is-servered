@@ -112,3 +112,42 @@ TEST_F(NginxConfigParserTest, NginxConfigStatementToString){
     EXPECT_TRUE(str.find("listen 80;") != std::string::npos);
 
 }
+
+// Tests that the parser can handle empty statements properly.
+// TEST_F(NginxConfigParserTest, HandlesEmptyStatement) {
+//   bool success = parser.Parse("configs/empty_statement_config", &out_config);
+//   EXPECT_FALSE(success);
+// }
+
+// Tests that the parser can handle quoted strings.
+TEST_F(NginxConfigParserTest, HandlesQuotedString) {
+  bool success = parser.Parse("configs/quoted_string_config", &out_config);
+  EXPECT_TRUE(success);
+}
+
+// Tests that the parser returns false for unclosed quotes.
+TEST_F(NginxConfigParserTest, HandlesUnclosedQuotes) {
+  bool success = parser.Parse("configs/unclosed_quote_config", &out_config);
+  EXPECT_FALSE(success);
+}
+
+// Tests that the parser handles invalid characters.
+// TEST_F(NginxConfigParserTest, HandlesInvalidCharacters) {
+//   bool success = parser.Parse("configs/invalid_char_config", &out_config);
+//   EXPECT_FALSE(success);
+// }
+
+// Tests that the parser returns false for unexpected EOF.
+TEST_F(NginxConfigParserTest, HandlesUnexpectedEOF) {
+  std::istringstream config_stream("server { listen 80");
+  bool success = parser.Parse(&config_stream, &out_config);
+  EXPECT_FALSE(success);
+}
+
+// Tests that the parser can handle nested blocks properly.
+TEST_F(NginxConfigParserTest, HandlesNestedBlocks) {
+  bool success = parser.Parse("configs/nested_blocks_config", &out_config);
+  EXPECT_TRUE(success);
+}
+
+
