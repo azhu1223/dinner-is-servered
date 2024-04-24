@@ -9,6 +9,20 @@ class NginxConfigParserTest : public testing::Test {
 
 };
 
+class NginxConfigTest : public ::testing::Test {
+protected:
+    void SetUp() override {
+        // Initialize config with some sample data
+        config_.statements_.emplace_back(new NginxConfigStatement);
+        config_.statements_.back()->tokens_ = {"server_name", "example.com"};
+        config_.statements_.emplace_back(new NginxConfigStatement);
+        config_.statements_.back()->tokens_ = {"listen", "80"};
+    }
+
+    NginxConfig config_;
+};
+
+
 TEST_F(NginxConfigParserTest, SimpleConfig) {
   bool success = parser.Parse("configs/example_config", &out_config);
 
@@ -150,4 +164,28 @@ TEST_F(NginxConfigParserTest, HandlesNestedBlocks) {
   EXPECT_TRUE(success);
 }
 
+TEST_F(NginxConfigTest, ToString) {
+    std::string expected_output = "server_name example.com;\nlisten 80;\n";
+
+    EXPECT_EQ(config_.ToString(), expected_output);
+}
+
+TEST(NginxConfigStatementTest, ToStringWithChildBlock) {
+    std::string test_config = "server {\n"
+                              "  listen 8080;\n"
+                              "  location / {\n"
+                              "    root /var/www;\n"
+                              "  }\n"
+                              "}\n";
+
+    std::istringstream input(test_config);
+    NginxConfigParser parser;
+    NginxConfig config;
+    ASSERT_TRUE(parser.Parse(&input, &config));
+
+    ASSERT_FALSE(config.statements_.empty());
+    auto server_block = config.statements_.front().get();
+
+    EXPECT_EQ(server_block->ToString(0), test_config);
+}
 

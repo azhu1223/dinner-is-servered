@@ -67,6 +67,9 @@ target_link_libraries(config_parser_test config_parser_lib config_interpreter_li
 add_executable(response_handler_test tests/response_handler_test.cc)
 target_link_libraries(response_handler_test response_handler_lib gtest_main)
 
+add_executable(session_test tests/session_test.cc)
+target_link_libraries(session_test session_lib response_handler_lib gtest_main)
+
 # Add Integration Tests
 if (NOT CMAKE_BUILD_TYPE STREQUAL Coverage)
     add_test(NAME IntegrationTests.example_config COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/tests/integration_tests/integration_test_example_config.py ${CMAKE_CURRENT_BINARY_DIR}/bin/server WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tests/integration_tests/)
@@ -80,8 +83,8 @@ endif()
 gtest_discover_tests(config_parser_test WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tests)
 gtest_discover_tests(config_interpreter_test WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tests)
 gtest_discover_tests(response_handler_test WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tests)
-
+gtest_discover_tests(session_test WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tests)
 
 # Generate Coverage Report
 include(cmake/CodeCoverageReportConfig.cmake)
-generate_coverage_report(TARGETS server_lib session_lib config_parser_lib config_interpreter_lib response_handler_lib TESTS config_parser_test config_interpreter_test  response_handler_test)
+generate_coverage_report(TARGETS server_lib session_lib config_parser_lib config_interpreter_lib response_handler_lib TESTS config_parser_test config_interpreter_test  response_handler_test session_test)
