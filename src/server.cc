@@ -10,6 +10,7 @@ server::server(boost::asio::io_service& io_service, short port)
 }
 
 bool server::start_accept() {
+    BOOST_LOG_TRIVIAL(info) << "Server now accepting requests";
     session* new_session = new session(io_service_);
     if (new_session == NULL) {
         return false;

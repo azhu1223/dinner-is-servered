@@ -32,3 +32,31 @@ TEST_F(SessionFixture, StartFunction) {
     bool result = s.start();
     EXPECT_TRUE(result);  
 }
+
+
+// TEST_F(SessionFixture, HandleWriteSuccess) {
+//     boost::system::error_code no_error;  
+//     session s(io_service);
+//     EXPECT_TRUE(s.handle_write(no_error)); 
+// }
+
+// TEST_F(SessionFixture, HandleWriteFailure) {
+//     boost::system::error_code error(boost::asio::error::network_down); 
+//     session s(io_service);
+//     EXPECT_FALSE(s.handle_write(error));  
+// }
+
+// TEST_F(SessionFixture, HandleReadFailure) {
+//     boost::system::error_code error(boost::asio::error::network_down);  
+//     session s(io_service);
+//     EXPECT_FALSE(s.handle_read(error, 0));  
+// }
+// TEST_F(SessionFixture, HandleReadNoError) {
+//     session s(io_service);
+//     boost::system::error_code noError; 
+//     size_t bytesTransferred = 42; 
+
+//     bool result = s.handle_read(noError, bytesTransferred);
+
+//     ASSERT_TRUE(result);
+// }

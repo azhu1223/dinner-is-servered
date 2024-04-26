@@ -8,22 +8,22 @@
 
 
 int main(int argc, char* argv[]) {
-    //Initialize logging
-    bool enable_file_logging = true;
-    // Check for "--disable-file-logging" flag
-    if (argc == 3 && std::string(argv[2]) == "--disable-file-logging") {
-        enable_file_logging = false;
-    }
-    intialize_logging(enable_file_logging);
-
-    //Intialize termination signal handler
-    signal (SIGINT, sig_handler);
-
     try {
-        if (argc > 3) {
+        if ( !(argc ==2 || (argc==3 && std::string(argv[2]) == "--disable-file-logging") ) ) {
             BOOST_LOG_TRIVIAL(fatal) << "Usage: server <config_file> [--disable-file-logging]";  // Corrected usage message
             return 1;
         }
+
+        //Initialize logging
+        bool enable_file_logging = true;
+        // Check for "--disable-file-logging" flag
+        if (argc == 3 && std::string(argv[2]) == "--disable-file-logging") {
+            enable_file_logging = false;
+        }
+        intialize_logging(enable_file_logging);
+
+        //Intialize termination signal handler
+        signal (SIGINT, sig_handler);
         
         boost::asio::io_service io_service;
 
