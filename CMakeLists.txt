@@ -72,6 +72,13 @@ target_link_libraries(response_handler_test response_handler_lib gtest_main)
 add_executable(session_test tests/session_test.cc)
 target_link_libraries(session_test session_lib response_handler_lib logger_lib Boost::log_setup Boost::log gtest_main)
 
+add_executable(signal_handler_test tests/signal_handler_test.cc)
+target_link_libraries(signal_handler_test signal_handler_lib gtest_main Boost::log_setup Boost::log)
+
+add_executable(logger_test tests/logger_test.cc)
+target_link_libraries(logger_test logger_lib gtest_main Boost::log_setup Boost::log)
+
+
 # Add Integration Tests
 if (NOT CMAKE_BUILD_TYPE STREQUAL Coverage)
     add_test(NAME IntegrationTests.example_config COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/tests/integration_tests/integration_test_example_config.py ${CMAKE_CURRENT_BINARY_DIR}/bin/server WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tests/integration_tests/)
@@ -86,7 +93,11 @@ gtest_discover_tests(config_parser_test WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE
 gtest_discover_tests(config_interpreter_test WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tests)
 gtest_discover_tests(response_handler_test WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tests)
 gtest_discover_tests(session_test WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tests)
+gtest_discover_tests(signal_handler_test WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tests)
+gtest_discover_tests(logger_test WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tests)
+
+
 
 # Generate Coverage Report
 include(cmake/CodeCoverageReportConfig.cmake)
-generate_coverage_report(TARGETS server_lib signal_handler_lib logger_lib session_lib config_parser_lib config_interpreter_lib response_handler_lib TESTS config_parser_test config_interpreter_test  response_handler_test session_test)
+generate_coverage_report(TARGETS server_lib signal_handler_lib logger_lib session_lib config_parser_lib config_interpreter_lib response_handler_lib TESTS config_parser_test config_interpreter_test  response_handler_test session_test signal_handler_test logger_test)
