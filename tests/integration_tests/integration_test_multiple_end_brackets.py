@@ -18,7 +18,7 @@ def main():
     args = setup_parser().parse_args()
 
     # Start the server process.
-    server_process = sp.Popen([args.server_path, config_folder + config_name], stdout=sp.PIPE)
+    server_process = sp.Popen([args.server_path, config_folder + config_name, "--disable-file-logging"], stdout=sp.PIPE)
 
     # Send HTTP request to the server via curl.
     # Send the output (response header and content) to a pipe.

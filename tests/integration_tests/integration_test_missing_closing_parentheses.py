@@ -16,7 +16,7 @@ def main():
     args = setup_parser().parse_args()
 
     # Start the server process.
-    server_process = sp.Popen([args.server_path, config_folder + config_name], stdout=sp.PIPE)
+    server_process = sp.Popen([args.server_path, config_folder + config_name, "--disable-file-logging"], stdout=sp.PIPE)
 
     # Added so that the server_process return code won't be None for some reason???
     server_process.wait()

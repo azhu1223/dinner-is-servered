@@ -1,6 +1,7 @@
 
 #include "config_interpreter.h"
 #include "config_parser.h"
+#include <boost/log/trivial.hpp>
 
 const int MINIMUM_VALID_PORT =0;
 const int MAXIMUM_VALID_PORT = 65536;
@@ -20,15 +21,15 @@ int getPort(NginxConfig &config){
                     try{
                         port = std::stoi(nestedStatement->tokens_[1]);
                     }catch(const std::invalid_argument& ia){
-                        std::cerr << "Invalid argument for port. Expected an integer" << std::endl;
+                        BOOST_LOG_TRIVIAL(error) << "Invalid argument for port. Expected an integer. Setting port to 80.";
                         port =80;
                     }catch(const std::out_of_range& oor){
-                        std::cerr << "Port out of range" << std::endl;
+                        BOOST_LOG_TRIVIAL(error) << "Port out of range. Setting port to 80.";
                         port =80;
                     }
                     //Verify port is within valid range
                     if (port < MINIMUM_VALID_PORT || port > MAXIMUM_VALID_PORT){
-                        std::cerr << "Port out of range" << std::endl;
+                        BOOST_LOG_TRIVIAL(error) << "Port out of range. Setting port to 80.";
                         port =80; 
                     }
 

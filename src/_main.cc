@@ -2,11 +2,26 @@
 #include "server.h"
 #include "config_parser.h"
 #include "config_interpreter.h"
+#include "logger.h"
+#include <boost/log/trivial.hpp>
+#include "signal_handler.h"
+
 
 int main(int argc, char* argv[]) {
+    //Initialize logging
+    bool enable_file_logging = true;
+    // Check for "--disable-file-logging" flag
+    if (argc == 3 && std::string(argv[2]) == "--disable-file-logging") {
+        enable_file_logging = false;
+    }
+    intialize_logging(enable_file_logging);
+
+    //Intialize termination signal handler
+    signal (SIGINT, sig_handler);
+
     try {
-        if (argc != 2) {
-            std::cerr << "Usage: server <config_file>\n";  // Corrected usage message
+        if (argc > 3) {
+            BOOST_LOG_TRIVIAL(fatal) << "Usage: server <config_file> [--disable-file-logging]";  // Corrected usage message
             return 1;
         }
         
@@ -16,15 +31,14 @@ int main(int argc, char* argv[]) {
         NginxConfigParser config_parser = NginxConfigParser();
         bool successfulConfigParse = config_parser.Parse(argv[1], &config);
         if (!successfulConfigParse) {
-            std::cerr << "Error in parsing the Nginx config file\n";
+            BOOST_LOG_TRIVIAL(fatal) << "Error in parsing the Nginx config file\n";
             return 1;
         }
-
         server s(io_service, getPort(config));
 
         s.run();
     } catch (const std::exception& e) {
-        std::cerr << "Exception: " << e.what() << "\n";
+        BOOST_LOG_TRIVIAL(fatal) << "Exception: " << e.what();
         return 1;
     }
     return 0;

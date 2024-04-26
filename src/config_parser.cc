@@ -14,8 +14,8 @@
 #include <stack>
 #include <string>
 #include <vector>
-
 #include "config_parser.h"
+#include <boost/log/trivial.hpp>
 
 std::string NginxConfig::ToString(int depth) {
   std::string serialized_config;
@@ -148,6 +148,7 @@ NginxConfigParser::TokenType NginxConfigParser::ParseToken(std::istream* input,
 }
 
 bool NginxConfigParser::Parse(std::istream* config_file, NginxConfig* config) {
+  BOOST_LOG_TRIVIAL(info) << "Parsing config file:";
   std::stack<NginxConfig*> config_stack;
   config_stack.push(config);
   TokenType last_token_type = TOKEN_TYPE_START;
@@ -155,7 +156,7 @@ bool NginxConfigParser::Parse(std::istream* config_file, NginxConfig* config) {
   while (true) {
     std::string token;
     token_type = ParseToken(config_file, &token);
-    printf ("%s: %s\n", TokenTypeAsString(token_type), token.c_str());
+    BOOST_LOG_TRIVIAL(info) << TokenTypeAsString(token_type) << ": " << token.c_str();
     if (token_type == TOKEN_TYPE_ERROR) {
       break;
     }
@@ -213,6 +214,7 @@ bool NginxConfigParser::Parse(std::istream* config_file, NginxConfig* config) {
         // Error.
         break;
       }
+      BOOST_LOG_TRIVIAL(info) << "Successfully parsed Nginx config file";
       return true;
     } else {
       // Error. Unknown token.
@@ -221,9 +223,8 @@ bool NginxConfigParser::Parse(std::istream* config_file, NginxConfig* config) {
     last_token_type = token_type;
   }
 
-  printf ("Bad transition from %s to %s\n",
-          TokenTypeAsString(last_token_type),
-          TokenTypeAsString(token_type));
+  BOOST_LOG_TRIVIAL(error) << "Bad transition from "<< TokenTypeAsString(last_token_type) 
+      << "to " << TokenTypeAsString(token_type);
   return false;
 }
 
@@ -231,7 +232,7 @@ bool NginxConfigParser::Parse(const char* file_name, NginxConfig* config) {
   std::ifstream config_file;
   config_file.open(file_name);
   if (!config_file.good()) {
-    printf ("Failed to open config file: %s\n", file_name);
+    BOOST_LOG_TRIVIAL(error) << "Failed to open config file: " << file_name;
     return false;
   }
 
