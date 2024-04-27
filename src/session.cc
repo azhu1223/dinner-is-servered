@@ -6,8 +6,9 @@
 #include <boost/log/trivial.hpp>
 
 
-session::session(boost::asio::io_service& io_service)
-    : socket_(io_service) {
+session::session(boost::asio::io_service& io_service, ServerPaths server_paths)
+    : socket_(io_service), server_paths_(server_paths) 
+{
 }
 
 boost::asio::ip::tcp::socket& session::socket() {
@@ -29,7 +30,7 @@ bool session::handle_read(const boost::system::error_code& error, size_t bytes_t
     
     
     if (!error) {
-        ResponseHandler rh = ResponseHandler(bytes_transferred, data_);
+        ResponseHandler rh = ResponseHandler(bytes_transferred, data_, server_paths_);
         std::vector<char> response = rh.create_response();
 
         boost::asio::async_write(socket_,

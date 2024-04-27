@@ -1,34 +1,40 @@
 #include "gtest/gtest.h"
 #include "session.h"
 #include <boost/bind.hpp>
-
+#include "config_interpreter.h"
+#include <vector>
+#include <string>
 
 class SessionFixture : public :: testing::Test {
     
     protected:
         boost::asio::io_service io_service;
+        ServerPaths server_paths;
         std::unique_ptr<session> session_;
         void SetUp() override {
-        session_ = std::make_unique<session>(io_service);
+        std::vector<std::string> echo_paths;
+        echo_paths.push_back("/");
+        server_paths.echo_ = echo_paths;
+        session_ = std::make_unique<session>(io_service, server_paths);
         }
 
 };
 
 
 TEST_F(SessionFixture, SessionConstructor) {
-    session s(io_service);
+    session s(io_service, server_paths);
     EXPECT_TRUE(true);
 }
 
 TEST_F(SessionFixture, SessionSocket) {
-    session s(io_service);
+    session s(io_service, server_paths);
     boost::asio::ip::tcp::socket& socket = s.socket();
     EXPECT_TRUE(true);
 }
 
 
 TEST_F(SessionFixture, StartFunction) {
-    session s(io_service);
+    session s(io_service, server_paths);
     bool result = s.start();
     EXPECT_TRUE(result);  
 }

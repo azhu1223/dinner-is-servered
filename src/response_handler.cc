@@ -8,7 +8,9 @@
 
 
 
-ResponseHandler::ResponseHandler(short bytes_transferred, const char data[]){
+ResponseHandler::ResponseHandler(short bytes_transferred, const char data[], ServerPaths server_paths)
+    :server_paths_(server_paths)
+{
     // Create a request parser
     // boost::beast::http::request_parser<boost::beast::http::string_body> parser;
     auto buffer = boost::asio::buffer(data, bytes_transferred);
@@ -35,7 +37,8 @@ std::vector<char> ResponseHandler::create_response(){
         BOOST_LOG_TRIVIAL(info) << "Request was static";
         return this->create_static_response();
     }
-    else if (method == boost::beast::http::verb::get && !this->isTargetStatic()){
+    //Note: keep echo at the bottom since / will often be included in config file as an echo path
+    else if (method == boost::beast::http::verb::get && this->isTargetEcho()){
         BOOST_LOG_TRIVIAL(info) << "Request was echo";
         return this->create_echo_response();
     }
@@ -88,7 +91,36 @@ bool ResponseHandler::isTargetStatic(){
         is_prev_shash = (c == '/');
     }
 
-    //TODO- update to be configurable from config file
-    return result.find("/static") == 0;
+    for (auto path : server_paths_.static_){
+        if(result.find(path) == 0){
+            return true;
+        }
+    }
+    return false;
+
+}
+
+bool ResponseHandler::isTargetEcho(){
+    auto message = this->parser.get();
+    boost::beast::string_view target = message.target();
+
+    std::string result;
+    bool is_prev_shash = false;
+
+    //Remove back to back slash
+    for (char c : target) {
+        if (c == '/' && is_prev_shash) {
+            continue;
+        }
+        result += c;
+        is_prev_shash = (c == '/');
+    }
+
+    for (auto path : server_paths_.echo_){
+        if(result.find(path) == 0){
+            return true;
+        }
+    }
+    return false;
 
 }

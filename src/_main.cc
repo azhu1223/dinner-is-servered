@@ -34,7 +34,8 @@ int main(int argc, char* argv[]) {
             BOOST_LOG_TRIVIAL(fatal) << "Error in parsing the Nginx config file\n";
             return 1;
         }
-        server s(io_service, getPort(config));
+
+        server s(io_service, getPort(config), getServerPaths(config));
 
         s.run();
     } catch (const std::exception& e) {

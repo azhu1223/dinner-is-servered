@@ -3,15 +3,17 @@
 #include <boost/log/trivial.hpp>
 #include "logger.h"
 
-server::server(boost::asio::io_service& io_service, short port)
-    : io_service_(io_service), acceptor_(io_service, boost::asio::ip::tcp::endpoint(boost::asio::ip::tcp::v4(), port)) {
+server::server(boost::asio::io_service& io_service, short port, ServerPaths server_paths)
+    : io_service_(io_service), server_paths_(server_paths),
+    acceptor_(io_service, boost::asio::ip::tcp::endpoint(boost::asio::ip::tcp::v4(), port)) 
+{
     BOOST_LOG_TRIVIAL(info) << "Starting server on port " << port;
     start_accept();
 }
 
 bool server::start_accept() {
     BOOST_LOG_TRIVIAL(info) << "Server now accepting requests";
-    session* new_session = new session(io_service_);
+    session* new_session = new session(io_service_, server_paths_);
     if (new_session == NULL) {
         return false;
     }

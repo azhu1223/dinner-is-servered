@@ -39,3 +39,48 @@ int getPort(NginxConfig &config){
     }
     return port;
 }
+
+//Retrieves the paths from the Nginx config file
+//Returns: [ [ECHO_PATHS], [STATIC_PATHS]]
+ServerPaths getServerPaths(NginxConfig &config){
+    std::vector<std::string> echo_paths;
+    std::vector<std::string> static_paths;
+
+    for (const auto& statement : config.statements_) {
+        BOOST_LOG_TRIVIAL(info) << "Finding server paths";
+        // Find the server statement
+        if (statement->tokens_[0] == "server") {
+            for (const auto& lv2Statement : statement->child_block_->statements_) {
+                //Find the paths statement   
+                if (lv2Statement->tokens_[0] == "paths") {
+                    for (const auto& lv3statement : lv2Statement->child_block_->statements_) {
+                        // Find all echo statements
+                        if (lv3statement->tokens_[0] == "echo") {
+                            BOOST_LOG_TRIVIAL(info) << "Adding echo path: " << lv3statement->tokens_[1];
+                            echo_paths.push_back(lv3statement->tokens_[1]);
+                        }
+                        //Find all static statements
+                        else if (lv3statement->tokens_[0] == "static") {
+                            BOOST_LOG_TRIVIAL(info) << "Adding static path: " << lv3statement->tokens_[1];
+                            static_paths.push_back(lv3statement->tokens_[1]);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    //If no paths are set, by default add root to an echo path
+    if (echo_paths.size() == 0 && static_paths.size() == 0){
+        BOOST_LOG_TRIVIAL(error) << "No paths found. Adding root as an echo path.";;
+        echo_paths.push_back("/");
+    }
+
+
+    ServerPaths paths;
+    paths.echo_ = echo_paths;
+    paths.static_ = static_paths;
+
+
+    return paths;
+}

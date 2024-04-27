@@ -3,17 +3,19 @@
 #include <string>
 #include <vector>
 #include <boost/asio.hpp>
+#include "config_interpreter.h"
+
 
 class session {
 public:
-    session(boost::asio::io_service& io_service);
+    session(boost::asio::io_service& io_service, ServerPaths server_paths);
     bool start();
     boost::asio::ip::tcp::socket& socket();
     bool handle_read(const boost::system::error_code& error, size_t bytes_transferred);
     bool handle_write(const boost::system::error_code& error);
 
 private:
-
+    ServerPaths server_paths_;
     boost::asio::ip::tcp::socket socket_;
     enum { max_length = 1024 };
     char data_[max_length];

@@ -1,3 +1,10 @@
 server {
   listen 80;
+  paths{
+    echo /;
+    echo /echo1;
+    echo /echo2;
+    static /static1;
+    static /static2;
+  }
 }
