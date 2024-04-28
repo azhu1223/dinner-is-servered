@@ -27,6 +27,16 @@ endif()
 # Output binaries to a sub directory "bin"
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
+
+# Specify the source directory of your resources folder
+set(RESOURCES_DIR ${CMAKE_CURRENT_SOURCE_DIR}/resources)
+
+# Specify the destination directory in the build directory
+set(RESOURCES_DEST ${CMAKE_CURRENT_BINARY_DIR})
+
+# Copy the resources folder to the build directory during the build process
+file(COPY ${RESOURCES_DIR} DESTINATION ${RESOURCES_DEST})
+
 # Enable cmake testing
 include(CTest)
 enable_testing()
