@@ -20,7 +20,7 @@ int main(int argc, char* argv[]) {
         if (argc == 3 && std::string(argv[2]) == "--disable-file-logging") {
             enable_file_logging = false;
         }
-        intialize_logging(enable_file_logging);
+        initialize_logging(enable_file_logging);
 
         //Intialize termination signal handler
         signal (SIGINT, sig_handler);

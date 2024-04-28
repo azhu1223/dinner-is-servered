@@ -3,6 +3,6 @@
 
 TEST(LoggerTest, Intitialization){
     //Execution
-    EXPECT_NO_THROW(intialize_logging(true));
-    EXPECT_NO_THROW(intialize_logging(false));
+    EXPECT_NO_THROW(initialize_logging(true));
+    EXPECT_NO_THROW(initialize_logging(false));
 }
