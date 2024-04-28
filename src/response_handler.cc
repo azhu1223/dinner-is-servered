@@ -5,8 +5,9 @@
 #include <boost/beast/http/parser.hpp>
 #include <boost/beast/http.hpp>
 #include <boost/log/trivial.hpp>
-
-
+#include <fstream>
+#include <sstream>
+#include <filesystem> 
 
 ResponseHandler::ResponseHandler(short bytes_transferred, const char data[], ServerPaths server_paths)
     :server_paths_(server_paths)
@@ -68,12 +69,84 @@ std::vector<char> ResponseHandler::create_echo_response(){
     return res;
 }
 
-std::vector<char> ResponseHandler::create_static_response(){
-    //TODO update to properly serve the static file
-    const std::string header = "STATIC FILE";
-    std::vector<char> res(header.begin(), header.end());
-    return res; 
+std::vector<char> ResponseHandler::create_static_response() {
+    auto message = this->parser.get();
+    boost::beast::string_view target = message.target();
+    std::string file_path = resolve_to_physical_path(target);
+
+    std::ifstream file(file_path, std::ios::binary | std::ios::ate);
+    if (!file) {
+        BOOST_LOG_TRIVIAL(error) << "Failed to open file: " << file_path;  // Log file opening failure
+        return generate_404_response();  // implemented this function to generate a 404 response
+    }
+
+    std::streamsize size = file.tellg();
+    file.seekg(0, std::ios::beg);
+
+    std::vector<char> buffer(size);
+    if (!file.read(buffer.data(), size)) {
+        BOOST_LOG_TRIVIAL(error) << "Failed to read file: " << file_path;  // Log file reading failure
+        return generate_500_response();  // implemented this function to generate a 500 response
+    }
+
+    // Create the response headers
+    std::stringstream ss;
+    ss << "HTTP/1.1 200 OK\r\nContent-Type: " << determine_content_type(file_path) << "\r\nContent-Length: " << size << "\r\n\r\n";
+    std::string header = ss.str();
+    std::vector<char> response(header.begin(), header.end());
+    response.insert(response.end(), buffer.begin(), buffer.end());
+
+    return response;
 }
+
+std::string ResponseHandler::determine_content_type(const std::string& file_path) {
+    const size_t pos = file_path.rfind('.');
+    if (pos != std::string::npos) {
+        std::string extension = file_path.substr(pos);
+        if (extension == ".html") return "text/html";
+        else if (extension == ".js") return "application/javascript";
+        else if (extension == ".css") return "text/css";
+        else if (extension == ".png") return "image/png";
+        else if (extension == ".jpg" || extension == ".jpeg") return "image/jpeg";
+    }
+    return "application/octet-stream";  // Default MIME type for unknown files
+}
+
+
+std::string ResponseHandler::resolve_to_physical_path(boost::beast::string_view target) {
+    try {
+        std::filesystem::path base_path = std::filesystem::canonical("/your/base/directory");
+        std::filesystem::path requested_path = std::filesystem::canonical(base_path / std::filesystem::path(target.to_string()));
+
+        if (requested_path.string().substr(0, base_path.string().length()) != base_path.string()) {
+            BOOST_LOG_TRIVIAL(error) << "Directory traversal attempt detected: " << target;
+            throw std::runtime_error("Access denied");
+        }
+
+        if (!std::filesystem::exists(requested_path) || std::filesystem::is_directory(requested_path)) {
+            BOOST_LOG_TRIVIAL(error) << "File not found or is a directory: " << requested_path;
+            throw std::runtime_error("File not found");
+        }
+
+        return requested_path.string();
+    } catch (const std::filesystem::filesystem_error& e) {
+        BOOST_LOG_TRIVIAL(error) << "Filesystem error: " << e.what();
+        throw;
+    }
+}
+
+
+std::vector<char> ResponseHandler::generate_404_response() {
+    std::string response = "HTTP/1.1 404 Not Found\r\nContent-Type: text/html\r\n\r\n<html><body><h1>404 Not Found</h1><p>The requested resource was not found on this server.</p></body></html>";
+    return std::vector<char>(response.begin(), response.end());
+}
+
+std::vector<char> ResponseHandler::generate_500_response() {
+    std::string response = "HTTP/1.1 500 Internal Server Error\r\nContent-Type: text/html\r\n\r\n<html><body><h1>500 Internal Server Error</h1><p>An error occurred while processing your request.</p></body></html>";
+    return std::vector<char>(response.begin(), response.end());
+}
+
+
 
 bool ResponseHandler::isTargetStatic(){
     auto message = this->parser.get();

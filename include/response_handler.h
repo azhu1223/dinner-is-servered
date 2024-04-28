@@ -5,6 +5,7 @@
 #include <boost/beast/http/parser.hpp>
 #include <boost/beast/http.hpp>
 #include "config_interpreter.h"
+#include <boost/beast/core.hpp> 
 
 
 
@@ -19,8 +20,18 @@ class ResponseHandler{
         short bytes_transferred;
         std::vector<char> create_echo_response();
         std::vector<char> create_static_response();
+
+        std::vector<char> generate_404_response();
+        std::vector<char> generate_500_response();
+
         bool isTargetStatic();
         bool isTargetEcho();
+
+        std::string determine_content_type(const std::string& file_path);
+        std::string resolve_to_physical_path(boost::beast::string_view target);
+
+
+        
 
 };
 #endif
