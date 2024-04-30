@@ -109,3 +109,65 @@ TEST_F(NginxConfigInterpreterTest, NonIntegerPort) {
     //Assertion
     EXPECT_EQ(port, expected_port);
 }
+
+// Tests for getServerPaths
+
+// Correct paths found
+TEST_F(NginxConfigInterpreterTest, CorrectPathsFound) {
+    // Setup
+    config = new NginxConfig;
+    NginxConfigStatement* server_statement = new NginxConfigStatement;
+    config->statements_.emplace_back(server_statement);
+    server_statement->tokens_.emplace_back("server");
+
+    // Create server block
+    NginxConfig* server_config = new NginxConfig;
+    server_statement->child_block_.reset(server_config);
+
+    // Create paths block
+    NginxConfigStatement* paths_statement = new NginxConfigStatement;
+    server_config->statements_.emplace_back(paths_statement);
+    paths_statement->tokens_.emplace_back("paths");
+
+    // Create echo and static paths
+    NginxConfig* paths_config = new NginxConfig;
+    paths_statement->child_block_.reset(paths_config);
+
+    // Echo path
+    NginxConfigStatement* echo_statement = new NginxConfigStatement;
+    paths_config->statements_.emplace_back(echo_statement);
+    echo_statement->tokens_.emplace_back("echo");
+    echo_statement->tokens_.emplace_back("/echo");
+
+    // Static path
+    NginxConfigStatement* static_statement = new NginxConfigStatement;
+    paths_config->statements_.emplace_back(static_statement);
+    static_statement->tokens_.emplace_back("static");
+    static_statement->tokens_.emplace_back("/static");
+
+    // Execution
+    ServerPaths server_paths = getServerPaths(*config);
+    
+    // Assertion
+    ASSERT_EQ(server_paths.echo_.size(), 1);
+    EXPECT_EQ(server_paths.echo_[0], "/echo");
+    ASSERT_EQ(server_paths.static_.size(), 1);
+    EXPECT_EQ(server_paths.static_[0], "/static");
+}
+
+// No paths specified, should add root to echo paths
+TEST_F(NginxConfigInterpreterTest, DefaultEchoPathWhenNoPaths) {
+    // Setup
+    config = new NginxConfig;
+
+    // Execution
+    ServerPaths server_paths = getServerPaths(*config);
+    
+    // Assertion
+    ASSERT_EQ(server_paths.echo_.size(), 1);
+    EXPECT_EQ(server_paths.echo_[0], "/");
+    EXPECT_TRUE(server_paths.static_.empty());
+}
+
+
+
