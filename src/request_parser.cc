@@ -62,5 +62,9 @@ bool RequestParser::isRequestStatic() {
 }
 
 std::string RequestParser::getFilePath() {
-    return file_path_;
+    return this->file_path_;
+}
+
+RequestType RequestParser::getRequestType() {
+    return this->request_type;
 }
