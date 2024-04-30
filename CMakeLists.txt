@@ -62,11 +62,96 @@ add_library(response_handler_lib src/response_handler.cc)
 add_library(logger_lib src/logger.cc)
 add_library(signal_handler_lib src/signal_handler.cc)
 add_library(echo_handler_lib src/echo_handler.cc)
+add_library(static_handler_lib src/static_handler.cc)
 add_library(request_parser_lib src/request_parser.cc)
+
+target_link_libraries(logger_lib
+                    Boost::system 
+                    Boost::log_setup 
+                    Boost::log
+                    )
+
+target_link_libraries(signal_handler_lib
+                    Boost::system 
+                    Boost::log_setup 
+                    Boost::log
+                    )
+
+target_link_libraries(server_lib
+                    session_lib
+                    logger_lib
+                    Boost::system 
+                    Boost::log_setup 
+                    Boost::log
+                    )
+
+target_link_libraries(config_interpreter_lib
+                    config_parser_lib
+                    Boost::system 
+                    Boost::log_setup 
+                    Boost::log
+                    )
+
+target_link_libraries(static_handler_lib
+                    response_handler_lib
+                    Boost::system 
+                    Boost::log_setup 
+                    Boost::log
+                    )
+
+target_link_libraries(echo_handler_lib
+                    response_handler_lib
+                    Boost::system 
+                    Boost::log_setup 
+                    Boost::log
+                    )
+
+target_link_libraries(response_handler_lib
+                    config_interpreter_lib
+                    Boost::system 
+                    Boost::log_setup 
+                    Boost::log
+                    )
+
+target_link_libraries(request_parser_lib
+                    config_interpreter_lib
+                    Boost::system 
+                    Boost::log_setup 
+                    Boost::log
+                    )
+
+target_link_libraries(session_lib 
+                    config_interpreter_lib
+                    response_handler_lib
+                    echo_handler_lib
+                    static_handler_lib
+                    request_parser_lib
+                    Boost::system 
+                    Boost::log_setup 
+                    Boost::log
+                    )
+
+target_link_libraries(server_lib
+                    logger_lib
+                    session_lib
+                    config_interpreter_lib
+                    Boost::system 
+                    Boost::log_setup 
+                    Boost::log
+                    )
 
 # Executables and target Libraries
 add_executable(server src/_main.cc)
-target_link_libraries(server logger_lib request_parser_lib signal_handler_lib server_lib config_parser_lib config_interpreter_lib session_lib echo_handler_lib response_handler_lib Boost::system Boost::log_setup Boost::log)
+target_link_libraries(server 
+                    server_lib
+                    config_parser_lib
+                    config_interpreter_lib
+                    logger_lib
+                    signal_handler_lib
+                    Boost::system 
+                    Boost::log_setup 
+                    Boost::log
+                    )
 
 #Test Executables and Target Libraries
 
@@ -80,7 +165,7 @@ add_executable(response_handler_test tests/response_handler_test.cc)
 target_link_libraries(response_handler_test response_handler_lib gtest_main)
 
 add_executable(session_test tests/session_test.cc)
-target_link_libraries(session_test request_parser_lib session_lib response_handler_lib echo_handler_lib logger_lib Boost::log_setup Boost::log gtest_main)
+target_link_libraries(session_test session_lib request_parser_lib response_handler_lib echo_handler_lib static_handler_lib logger_lib Boost::log_setup Boost::log gtest_main)
 
 add_executable(signal_handler_test tests/signal_handler_test.cc)
 target_link_libraries(signal_handler_test signal_handler_lib gtest_main Boost::log_setup Boost::log)

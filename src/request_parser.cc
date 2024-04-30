@@ -60,3 +60,7 @@ bool RequestParser::isRequestStatic() {
     }
     return false;
 }
+
+std::string RequestParser::getFilePath() {
+    return file_path_;
+}

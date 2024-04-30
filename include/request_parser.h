@@ -4,6 +4,7 @@
 #include <boost/beast/http.hpp>
 #include <boost/log/trivial.hpp>
 #include "config_interpreter.h"
+#include <string>
 
 enum RequestType {
     Static,
@@ -17,6 +18,7 @@ class RequestParser {
         RequestParser(short bytes_transferred, const char data[], ServerPaths server_paths);
         bool isRequestEcho();
         bool isRequestStatic();
+        std::string getFilePath();
 
     private:
         boost::beast::http::request_parser<boost::beast::http::string_body> parser;

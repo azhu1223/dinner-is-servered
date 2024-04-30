@@ -5,6 +5,7 @@
 #include "response_handler.h"
 #include <boost/log/trivial.hpp>
 #include "echo_handler.h"
+#include "static_handler.h"
 #include "request_parser.h"
 #include <iostream>
 
@@ -36,9 +37,15 @@ bool session::handle_read(const boost::system::error_code& error, size_t bytes_t
         RequestParser* parser = new RequestParser(bytes_transferred, data_, server_paths_);
         BOOST_LOG_TRIVIAL(info) << "Is static request? " << parser->isRequestStatic();
         BOOST_LOG_TRIVIAL(info) << "Is echo request? " << parser->isRequestEcho();
+        ResponseHandler* rh;
+        if (parser->isRequestStatic()) {
+            rh = new StaticHandler(bytes_transferred, data_, server_paths_, parser->getFilePath());
+        }
+        else if (parser->isRequestEcho()) {
+            rh = new EchoHandler(bytes_transferred, data_, server_paths_);
+        }
 
-        ResponseHandler rh = ResponseHandler(bytes_transferred, data_, server_paths_);
-        std::vector<char> response = rh.create_response();
+        std::vector<char> response = rh->create_response();
 
         boost::asio::async_write(socket_,
             boost::asio::buffer(response.data(), response.size()),
