@@ -4,11 +4,14 @@
 #include <boost/bind.hpp>
 #include "response_handler.h"
 #include <boost/log/trivial.hpp>
-
+#include "echo_handler.h"
+#include "request_parser.h"
+#include <iostream>
 
 session::session(boost::asio::io_service& io_service, ServerPaths server_paths)
     : socket_(io_service), server_paths_(server_paths) 
 {
+
 }
 
 boost::asio::ip::tcp::socket& session::socket() {
@@ -30,6 +33,10 @@ bool session::handle_read(const boost::system::error_code& error, size_t bytes_t
     
     
     if (!error) {
+        RequestParser* parser = new RequestParser(bytes_transferred, data_, server_paths_);
+        BOOST_LOG_TRIVIAL(info) << "Is static request? " << parser->isRequestStatic();
+        BOOST_LOG_TRIVIAL(info) << "Is echo request? " << parser->isRequestEcho();
+
         ResponseHandler rh = ResponseHandler(bytes_transferred, data_, server_paths_);
         std::vector<char> response = rh.create_response();
 
