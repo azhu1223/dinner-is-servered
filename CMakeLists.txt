@@ -161,8 +161,8 @@ target_link_libraries(config_interpreter_test config_parser_lib config_interpret
 add_executable(config_parser_test tests/config_parser_test.cc)
 target_link_libraries(config_parser_test config_parser_lib config_interpreter_lib logger_lib Boost::log_setup Boost::log gtest_main)
 
-add_executable(response_handler_test tests/response_handler_test.cc)
-target_link_libraries(response_handler_test response_handler_lib gtest_main)
+add_executable(echo_handler_test tests/echo_handler_test.cc)
+target_link_libraries(echo_handler_test echo_handler_lib gtest_main)
 
 add_executable(session_test tests/session_test.cc)
 target_link_libraries(session_test session_lib request_parser_lib response_handler_lib echo_handler_lib static_handler_lib logger_lib Boost::log_setup Boost::log gtest_main)
@@ -188,7 +188,7 @@ endif()
 #Discover tests
 gtest_discover_tests(config_parser_test WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tests)
 gtest_discover_tests(config_interpreter_test WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tests)
-gtest_discover_tests(response_handler_test WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tests)
+gtest_discover_tests(echo_handler_test WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tests)
 gtest_discover_tests(session_test WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tests)
 gtest_discover_tests(signal_handler_test WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tests)
 gtest_discover_tests(logger_test WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tests)
@@ -197,4 +197,4 @@ gtest_discover_tests(request_parser_test WORKING_DIRECTORY ${CMAKE_CURRENT_SOURC
 
 # Generate Coverage Report
 include(cmake/CodeCoverageReportConfig.cmake)
-generate_coverage_report(TARGETS server_lib signal_handler_lib logger_lib session_lib config_parser_lib config_interpreter_lib response_handler_lib request_parser_lib TESTS config_parser_test config_interpreter_test  response_handler_test session_test signal_handler_test logger_test request_parser_test)
+generate_coverage_report(TARGETS server_lib signal_handler_lib logger_lib session_lib config_parser_lib config_interpreter_lib response_handler_lib request_parser_lib echo_handler_lib static_handler_lib TESTS config_parser_test config_interpreter_test  echo_handler_test session_test signal_handler_test logger_test request_parser_test)
