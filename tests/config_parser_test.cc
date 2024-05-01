@@ -189,3 +189,91 @@ TEST(NginxConfigStatementTest, ToStringWithChildBlock) {
     EXPECT_EQ(server_block->ToString(0), test_config);
 }
 
+TEST_F(NginxConfigParserTest, DeeplyNestedBlocks) {
+    std::istringstream config_stream("server { location / { location /inner { location /more { } } } }");
+    bool success = parser.Parse(&config_stream, &out_config);
+    EXPECT_TRUE(success);
+}
+
+TEST_F(NginxConfigParserTest, TokenAtBufferBoundary) {
+    std::istringstream config_stream("http { server_name example.com;}\n#comment");
+    bool success = parser.Parse(&config_stream, &out_config);
+    EXPECT_TRUE(success);
+}
+
+TEST_F(NginxConfigParserTest, ExcessiveWhitespaceHandling) {
+    std::istringstream config_stream("    server   { \n listen    80 ; \n }   ");
+    bool success = parser.Parse(&config_stream, &out_config);
+    EXPECT_TRUE(success);
+}
+TEST_F(NginxConfigParserTest, ContinuousCommentBlocks) {
+    std::istringstream config_stream("# This is a comment\n# Another comment\nserver { listen 80; }");
+    bool success = parser.Parse(&config_stream, &out_config);
+    EXPECT_TRUE(success);
+}
+
+TEST_F(NginxConfigParserTest, SequentialCommandsOnSingleLine) {
+    std::istringstream config_stream("listen 80;server_name example.com;");
+    bool success = parser.Parse(&config_stream, &out_config);
+    EXPECT_TRUE(success);
+}
+TEST_F(NginxConfigParserTest, NestedComments) {
+    std::istringstream config_stream("server { # outer comment # inner comment\n listen 80; }");
+    bool success = parser.Parse(&config_stream, &out_config);
+    EXPECT_TRUE(success);
+}
+TEST_F(NginxConfigParserTest, EOFWithOpenBlock) {
+    std::istringstream config_stream("server { listen 80");
+    bool success = parser.Parse(&config_stream, &out_config);
+    EXPECT_FALSE(success);
+}
+TEST_F(NginxConfigParserTest, EscapedCharactersInStrings) {
+    std::istringstream config_stream("path \"/data/location\\ on\\ disk\";");
+    bool success = parser.Parse(&config_stream, &out_config);
+    EXPECT_TRUE(success);
+}
+TEST_F(NginxConfigParserTest, ExcessiveWhitespaceAroundTokens) {
+    std::istringstream config_stream("   listen     80    ;   ");
+    bool success = parser.Parse(&config_stream, &out_config);
+    EXPECT_TRUE(success);
+}
+TEST_F(NginxConfigParserTest, CommentAtEndOfBlock) {
+    std::istringstream config_stream("server { listen 80; # This is a comment\n}");
+    bool success = parser.Parse(&config_stream, &out_config);
+    EXPECT_TRUE(success);
+}
+
+TEST_F(NginxConfigParserTest, MixedQuotesInTokens) {
+    std::istringstream config_stream("path '/var/log/nginx\"");
+    bool success = parser.Parse(&config_stream, &out_config);
+    EXPECT_FALSE(success);
+}
+TEST_F(NginxConfigParserTest, UnfinishedStatements) {
+    std::istringstream config_stream("server { listen 80 ");
+    bool success = parser.Parse(&config_stream, &out_config);
+    EXPECT_FALSE(success);
+}
+
+TEST_F(NginxConfigParserTest, CommentsWithinTokens) {
+    std::istringstream config_stream("server { listen # Listening port\n 80; }");
+    bool success = parser.Parse(&config_stream, &out_config);
+    EXPECT_TRUE(success);
+}
+TEST_F(NginxConfigParserTest, MultipleStatementsPerLineWithComments) {
+    std::istringstream config_stream("server_name example.com; # server comment\n listen 80; # listen comment");
+    bool success = parser.Parse(&config_stream, &out_config);
+    EXPECT_TRUE(success);
+}
+TEST_F(NginxConfigParserTest, ValidNestedConfigurations) {
+    std::istringstream config_stream("http { server { location / { root /www; index index.html; } } }");
+    bool success = parser.Parse(&config_stream, &out_config);
+    EXPECT_TRUE(success);
+}
+TEST_F(NginxConfigParserTest, RepeatedEndBlocks) {
+    std::istringstream config_stream("server { listen 80; } }");
+    bool success = parser.Parse(&config_stream, &out_config);
+    EXPECT_FALSE(success);
+}
+
+
+
