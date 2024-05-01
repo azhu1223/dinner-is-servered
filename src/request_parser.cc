@@ -68,3 +68,7 @@ std::string RequestParser::getFilePath() {
 RequestType RequestParser::getRequestType() {
     return this->request_type;
 }
+
+boost::beast::string_view RequestParser::getTarget(){
+    return this->parser.get().target();
+}

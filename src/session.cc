@@ -28,17 +28,16 @@ bool session::start() {
 }
 
 bool session::handle_read(const boost::system::error_code& error, size_t bytes_transferred) {
-
-    boost::system::error_code ec;
-    BOOST_LOG_TRIVIAL(info) << "Request from " << socket_.remote_endpoint(ec).address();
-    if (ec){
-        BOOST_LOG_TRIVIAL(error) << "handle_read: Transport endpoint is not connected";
-    }
-    
-    
     
     if (!error) {
         RequestParser parser = RequestParser(bytes_transferred, data_, server_paths_);
+        boost::system::error_code ec;
+        BOOST_LOG_TRIVIAL(info) << "Request from " << socket_.remote_endpoint(ec).address() 
+            << " for target " << parser.getTarget();
+        if (ec){
+            BOOST_LOG_TRIVIAL(error) << "handle_read: Transport endpoint is not connected";
+        }
+
         BOOST_LOG_TRIVIAL(info) << "Is static request? " << parser.isRequestStatic();
         BOOST_LOG_TRIVIAL(info) << "Is echo request? " << parser.isRequestEcho();
         ResponseHandler* rh;

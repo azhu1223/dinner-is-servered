@@ -20,6 +20,7 @@ class RequestParser {
         bool isRequestStatic();
         std::string getFilePath();
         RequestType getRequestType();
+        boost::beast::string_view getTarget();
 
     private:
         boost::beast::http::request_parser<boost::beast::http::string_body> parser;

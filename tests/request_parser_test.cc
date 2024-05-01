@@ -77,3 +77,12 @@ TEST_F(ParserFixture, StaticRequestWithConsecutiveSlashes_ReturnsTrue) {
     auto parser = createRequestParser(requestData, strlen(requestData));
     EXPECT_TRUE(parser->isRequestStatic());
 }
+
+TEST_F(ParserFixture, GetTarget) {
+    const char* requestData = "GET /test/static//image.png HTTP/1.1\r\nHost: example.com\r\n\r\n";
+    auto parser = createRequestParser(requestData, strlen(requestData));
+
+    std::string expected_target = "/test/static//image.png";
+    boost::beast::string_view target= parser->getTarget();
+    EXPECT_TRUE(expected_target == std::string(target));
+}
