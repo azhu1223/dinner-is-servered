@@ -46,6 +46,7 @@ bool session::handle_read(const boost::system::error_code& error, size_t bytes_t
         }
 
         std::vector<char> response = rh->create_response();
+        delete rh;
 
         boost::asio::async_write(socket_,
             boost::asio::buffer(response.data(), response.size()),
