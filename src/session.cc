@@ -29,7 +29,11 @@ bool session::start() {
 
 bool session::handle_read(const boost::system::error_code& error, size_t bytes_transferred) {
 
-    BOOST_LOG_TRIVIAL(info) << "Request from " << socket_.remote_endpoint().address();
+    boost::system::error_code ec;
+    BOOST_LOG_TRIVIAL(info) << "Request from " << socket_.remote_endpoint(ec).address();
+    if (ec){
+        BOOST_LOG_TRIVIAL(error) << "handle_read: Transport endpoint is not connected";
+    }
     
     
     
@@ -59,7 +63,12 @@ bool session::handle_read(const boost::system::error_code& error, size_t bytes_t
 }
 
 bool session::handle_write(const boost::system::error_code& error) {
-    BOOST_LOG_TRIVIAL(info) << "Sending response to " << socket_.remote_endpoint().address();
+
+    boost::system::error_code ec;
+    BOOST_LOG_TRIVIAL(info) << "Sending response to " << socket_.remote_endpoint(ec).address();
+    if (ec){
+        BOOST_LOG_TRIVIAL(error) << "handle_write: Transport endpoint is not connected";
+    }
 
     if (!error) {
         socket_.async_read_some(boost::asio::buffer(data_, max_length),
