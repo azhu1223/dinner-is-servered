@@ -38,31 +38,35 @@ TEST_F(SessionFixture, StartFunction) {
     bool result = s.start();
     EXPECT_TRUE(result);  
 }
+TEST_F(SessionFixture, DefaultProperties) {
+    EXPECT_NE(&session_->socket(), nullptr);  // Ensures socket is not null
+    // Other properties checks depending on initial conditions assumed by session
+}
+TEST_F(SessionFixture, StartFunctionSetup) {
+    // Checking that start function sets up the async_read_some correctly
+    bool result = session_->start();
+    EXPECT_TRUE(result);
+    // Optionally, verify that the correct handler is set up, but this might require access to internal state or mocks.
+}
+TEST_F(SessionFixture, RepeatedStartCalls) {
+    EXPECT_TRUE(session_->start());  // First start should succeed
+    EXPECT_TRUE(session_->start());  // Subsequent starts might be no-op but should still succeed
+    // Check if any error flags are raised or if the state is still valid
+}
+TEST_F(SessionFixture, HandleSocketClosure) {
+    session_->start();
+    session_->socket().close();  // Manually close the socket
+    EXPECT_FALSE(session_->socket().is_open());  // Socket should be closed now
+}
+TEST_F(SessionFixture, DestructorTest) {
+    {
+        auto local_session = std::make_unique<session>(io_service, server_paths);
+        local_session->start();  // Optionally start the session
+    }  // local_session goes out of scope and is destroyed
+    // You can check logs or other indicators to ensure destruction went smoothly
+    EXPECT_TRUE(true);  // Mainly looking for absence of crashes or errors
+}
 
 
-// TEST_F(SessionFixture, HandleWriteSuccess) {
-//     boost::system::error_code no_error;  
-//     session s(io_service);
-//     EXPECT_TRUE(s.handle_write(no_error)); 
-// }
 
-// TEST_F(SessionFixture, HandleWriteFailure) {
-//     boost::system::error_code error(boost::asio::error::network_down); 
-//     session s(io_service);
-//     EXPECT_FALSE(s.handle_write(error));  
-// }
 
-// TEST_F(SessionFixture, HandleReadFailure) {
-//     boost::system::error_code error(boost::asio::error::network_down);  
-//     session s(io_service);
-//     EXPECT_FALSE(s.handle_read(error, 0));  
-// }
-// TEST_F(SessionFixture, HandleReadNoError) {
-//     session s(io_service);
-//     boost::system::error_code noError; 
-//     size_t bytesTransferred = 42; 
-
-//     bool result = s.handle_read(noError, bytesTransferred);
-
-//     ASSERT_TRUE(result);
-// }
