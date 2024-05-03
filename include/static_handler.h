@@ -1,6 +1,9 @@
 #ifndef STATIC_HANDLER_H
 #define STATIC_HANDLER_H
+
 #include "response_handler.h"
+#include "config_interpreter.h"
+#include <vector>
 #include <string>
 
 class StaticHandler : public ResponseHandler {

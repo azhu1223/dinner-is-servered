@@ -1,8 +1,8 @@
 #include "request_parser.h"
-#include <boost/beast/http/parser.hpp>
-#include <boost/log/trivial.hpp>
-#include <boost/beast/http.hpp>
 #include "config_interpreter.h"
+#include <boost/beast/http/parser.hpp>
+#include <boost/beast/http.hpp>
+#include <boost/log/trivial.hpp>
 
 RequestParser::RequestParser(short bytes_transferred, const char data[], ServerPaths server_paths) : server_paths_(server_paths), file_path_("") {
     auto buffer = boost::asio::buffer(data, bytes_transferred);

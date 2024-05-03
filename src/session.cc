@@ -1,13 +1,11 @@
 #include "session.h"
-#include <string>
-#include <vector>
-#include <boost/bind.hpp>
+#include "request_parser.h"
 #include "response_handler.h"
-#include <boost/log/trivial.hpp>
 #include "echo_handler.h"
 #include "static_handler.h"
-#include "request_parser.h"
-#include <iostream>
+#include <boost/bind.hpp>
+#include <boost/log/trivial.hpp>
+#include <vector>
 
 session::session(boost::asio::io_service& io_service, ServerPaths server_paths)
     : socket_(io_service), server_paths_(server_paths) 

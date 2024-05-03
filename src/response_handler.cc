@@ -1,11 +1,6 @@
 #include "response_handler.h"
-#include <string>
-#include <iostream>
 #include <boost/asio.hpp>
-#include <boost/beast/http/parser.hpp>
 #include <boost/beast/http.hpp>
-#include <boost/log/trivial.hpp>
-#include <fstream>
 
 
 ResponseHandler::ResponseHandler(short bytes_transferred, const char data[], ServerPaths server_paths)

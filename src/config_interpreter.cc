@@ -1,4 +1,3 @@
-
 #include "config_interpreter.h"
 #include "config_parser.h"
 #include <boost/log/trivial.hpp>

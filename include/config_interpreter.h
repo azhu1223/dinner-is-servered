@@ -5,7 +5,7 @@
 
 #include "config_parser.h"
 #include <vector>
-#include<string>
+#include <string>
 
 //Struct for paths
 struct ServerPaths{

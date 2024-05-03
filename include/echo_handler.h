@@ -1,6 +1,10 @@
 #ifndef STATIC_H
 #define STATIC_H
+
 #include "response_handler.h"
+#include "config_interpreter.h"
+#include <vector>
+
 
 class EchoHandler : public ResponseHandler {
     public:

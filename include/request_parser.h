@@ -1,9 +1,9 @@
 #ifndef REQUEST_PARSER_H
 #define REQUEST_PARSER_H
+
+#include "config_interpreter.h"
 #include <boost/beast/http/parser.hpp>
 #include <boost/beast/http.hpp>
-#include <boost/log/trivial.hpp>
-#include "config_interpreter.h"
 #include <string>
 
 enum RequestType {

@@ -1,10 +1,10 @@
 #ifndef SESSION_H
 #define SESSION_H
+
+#include "config_interpreter.h"
+#include <boost/asio.hpp>
 #include <string>
 #include <vector>
-#include <boost/asio.hpp>
-#include "config_interpreter.h"
-#include "request_parser.h"
 
 class session {
 public:

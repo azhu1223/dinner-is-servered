@@ -1,13 +1,10 @@
-#include "static_handler.h"
-#include <string>
-#include <iostream>
 #include "response_handler.h"
-#include <boost/asio.hpp>
-#include <boost/beast/http/parser.hpp>
-#include <boost/beast/http.hpp>
+#include "static_handler.h"
+#include "config_interpreter.h"
 #include <boost/log/trivial.hpp>
 #include <fstream>
 #include <vector>
+#include <string>
 
 StaticHandler::StaticHandler(short bytes_transferred, const char data[], ServerPaths server_paths, std::string file_path) : ResponseHandler(bytes_transferred, data, server_paths), file_path_(file_path) {}
 

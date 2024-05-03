@@ -1,10 +1,10 @@
-#include <iostream>
 #include "server.h"
 #include "config_parser.h"
 #include "config_interpreter.h"
 #include "logger.h"
-#include <boost/log/trivial.hpp>
 #include "signal_handler.h"
+#include <boost/log/trivial.hpp>
+#include <iostream>
 
 
 int main(int argc, char* argv[]) {

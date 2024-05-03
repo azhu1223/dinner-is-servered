@@ -1,9 +1,9 @@
 #ifndef SERVER_H
 #define SERVER_H
 
-#include <boost/asio.hpp>
 #include "session.h"
 #include "config_interpreter.h"
+#include <boost/asio.hpp>
 
 
 class server {

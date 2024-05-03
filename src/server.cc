@@ -1,7 +1,8 @@
 #include "server.h"
+#include "config_interpreter.h"
+#include <boost/asio.hpp>
 #include <boost/bind.hpp>
 #include <boost/log/trivial.hpp>
-#include "logger.h"
 
 server::server(boost::asio::io_service& io_service, short port, ServerPaths server_paths)
     : io_service_(io_service), server_paths_(server_paths),
