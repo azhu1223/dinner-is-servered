@@ -3,7 +3,7 @@
 #include <boost/log/trivial.hpp>
 
 const int MINIMUM_VALID_PORT =0;
-const int MAXIMUM_VALID_PORT = 65536;
+const int MAXIMUM_VALID_PORT = 65535;
 
 //Retrieves the port from the Nginx config file
 //Returns the port if found, otherwise returns 80 (default)
