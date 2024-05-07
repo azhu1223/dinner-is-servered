@@ -1,6 +1,11 @@
 #include "config_interpreter.h"
 #include "config_parser.h"
 #include <boost/log/trivial.hpp>
+#include <map>
+#include <string>
+#include <vector>
+#include <stdexcept>
+
 
 const int MINIMUM_VALID_PORT =0;
 const int MAXIMUM_VALID_PORT = 65535;
@@ -40,10 +45,10 @@ int getPort(NginxConfig &config){
 }
 
 //Retrieves the paths from the Nginx config file
-//Returns: [ [ECHO_PATHS], [STATIC_PATHS]]
+//Returns: [ [ECHO_PATHS], <STATIC_PATHS, SERVER_LOCATION> ]
 ServerPaths getServerPaths(NginxConfig &config){
     std::vector<std::string> echo_paths;
-    std::vector<std::string> static_paths;
+    std::map<std::string, std::string> static_paths_to_server_paths;
 
     for (const auto& statement : config.statements_) {
         BOOST_LOG_TRIVIAL(info) << "Finding server paths";
@@ -60,8 +65,12 @@ ServerPaths getServerPaths(NginxConfig &config){
                         }
                         //Find all static statements
                         else if (lv3statement->tokens_[0] == "static") {
-                            BOOST_LOG_TRIVIAL(info) << "Adding static path: " << lv3statement->tokens_[1];
-                            static_paths.push_back(lv3statement->tokens_[1]);
+                            if (static_paths_to_server_paths.find(lv3statement->tokens_[1]) != static_paths_to_server_paths.end()){
+                                BOOST_LOG_TRIVIAL(fatal) << "Duplicate static path: " << lv3statement->tokens_[1];
+                                throw std::runtime_error("Duplicate static path");
+                            }
+                            BOOST_LOG_TRIVIAL(info) << "Adding static path: " << lv3statement->tokens_[1] << " mapping to server location " << lv3statement->tokens_[2];
+                            static_paths_to_server_paths[lv3statement->tokens_[1]] = lv3statement->tokens_[2];
                         }
                     }
                 }
@@ -70,7 +79,7 @@ ServerPaths getServerPaths(NginxConfig &config){
     }
 
     //If no paths are set, by default add root to an echo path
-    if (echo_paths.size() == 0 && static_paths.size() == 0){
+    if (echo_paths.size() == 0 && static_paths_to_server_paths.size() == 0){
         BOOST_LOG_TRIVIAL(error) << "No paths found. Adding root as an echo path.";;
         echo_paths.push_back("/");
     }
@@ -78,7 +87,7 @@ ServerPaths getServerPaths(NginxConfig &config){
 
     ServerPaths paths;
     paths.echo_ = echo_paths;
-    paths.static_ = static_paths;
+    paths.static_ = static_paths_to_server_paths;
 
 
     return paths;

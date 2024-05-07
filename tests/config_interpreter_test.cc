@@ -143,7 +143,8 @@ TEST_F(NginxConfigInterpreterTest, CorrectPathsFound) {
     NginxConfigStatement* static_statement = new NginxConfigStatement;
     paths_config->statements_.emplace_back(static_statement);
     static_statement->tokens_.emplace_back("static");
-    static_statement->tokens_.emplace_back("/static");
+    static_statement->tokens_.emplace_back("/staticblah");
+    static_statement->tokens_.emplace_back("/blah");
 
     // Execution
     ServerPaths server_paths = getServerPaths(*config);
@@ -152,7 +153,7 @@ TEST_F(NginxConfigInterpreterTest, CorrectPathsFound) {
     ASSERT_EQ(server_paths.echo_.size(), 1);
     EXPECT_EQ(server_paths.echo_[0], "/echo");
     ASSERT_EQ(server_paths.static_.size(), 1);
-    EXPECT_EQ(server_paths.static_[0], "/static");
+    EXPECT_EQ(server_paths.static_["/staticblah"], "/blah");
 }
 
 // No paths specified, should add root to echo paths

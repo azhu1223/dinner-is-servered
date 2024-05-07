@@ -4,7 +4,8 @@ server {
     echo /;
     echo /echo1;
     echo /echo2;
-    static /static1;
-    static /static2;
+    static /staticimages /images;
+    static /statictext /text;
+    static /staticroot /;
   }
 }

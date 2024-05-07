@@ -1,7 +1,7 @@
 #ifndef SESSION_H
 #define SESSION_H
 
-#include "config_interpreter.h"
+#include "utils.h"
 #include <boost/asio.hpp>
 #include <string>
 #include <vector>

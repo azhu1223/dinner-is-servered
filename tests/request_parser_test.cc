@@ -17,11 +17,11 @@ protected:
     void SetUp() override {
         kServerPaths.echo_.push_back("/test/echo1");
         kServerPaths.echo_.push_back("/test/echo2");
-        kServerPaths.static_.push_back("/test/static1");
-        kServerPaths.static_.push_back("/test/static2");
+        kServerPaths.static_["/test/static1"] = "/test/static1";
+        kServerPaths.static_["/test/static2"] = "/test/static2";
 
         xServerPaths.echo_.push_back("/test/echo");
-        xServerPaths.static_.push_back("/test/static");
+        xServerPaths.static_["/test/static"] = "/test/static";
 
         req = new RequestParser(kBytesTransferred, kData, kServerPaths);
     }

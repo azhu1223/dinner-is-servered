@@ -1,5 +1,5 @@
 #include "request_parser.h"
-#include "config_interpreter.h"
+#include "utils.h"
 #include <boost/beast/http/parser.hpp>
 #include <boost/beast/http.hpp>
 #include <boost/log/trivial.hpp>
@@ -51,13 +51,25 @@ bool RequestParser::isRequestStatic() {
         is_prev_shash = (c == '/');
     }
 
-    for (auto path : server_paths_.static_){
-        if(result.find(path) == 0){
-            file_path_ = "../resources" + result.substr(result.find(path)+path.length());
-            BOOST_LOG_TRIVIAL(info) << "Set file_path_ to " << file_path_;
-            return true;
+    //Look for the closest matching static path
+    int longsest_size = 0;
+    std::string longest_path = "";
+    for (auto path_to_location : server_paths_.static_){
+        std::string path = path_to_location.first;
+        if(result.find(path) == 0 && path.length() > longsest_size){
+         longsest_size = path.length();
+            longest_path = path;
         }
     }
+
+    //Set location
+    if(result.find(longest_path) == 0 && longest_path.length() > 0){
+        file_path_ = "../resources" + server_paths_.static_[longest_path] 
+                        + result.substr(result.find(longest_path) + longest_path.length());
+        BOOST_LOG_TRIVIAL(info) << "Set file_path_ to " << file_path_;
+        return true;
+    }
+
     return false;
 }
 

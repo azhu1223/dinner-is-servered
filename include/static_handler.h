@@ -2,7 +2,7 @@
 #define STATIC_HANDLER_H
 
 #include "response_handler.h"
-#include "config_interpreter.h"
+#include "utils.h"
 #include <vector>
 #include <string>
 

@@ -5,13 +5,9 @@
 
 #include "config_parser.h"
 #include <vector>
-#include <string>
-
-//Struct for paths
-struct ServerPaths{
-    std::vector<std::string> echo_;
-    std::vector<std::string> static_;
-};
+#include <map>
+#include  <string>
+#include "utils.h"
 
 //Retrieves the port from the Nginx config file
 //Returns the port if found, otherwise returns 80 (default)
@@ -20,7 +16,7 @@ int getPort(NginxConfig &config);
 
 
 //Retrieves the paths from the Nginx config file
-//Returns: [ [ECHO_PATHS], [STATIC_PATHS]]
+//Returns: [ [ECHO_PATHS], <STATIC_PATHS, SERVER_LOCATION> ]
 ServerPaths getServerPaths(NginxConfig &config);
 
 #endif
