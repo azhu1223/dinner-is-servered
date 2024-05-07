@@ -37,7 +37,6 @@ protected:
 
 
 TEST_F(ParserFixture, ParserConstructor) {
-    EXPECT_EQ(req->getRequestType(), RequestType::None);
     EXPECT_STREQ(req->getFilePath().c_str(), "");
 }
 

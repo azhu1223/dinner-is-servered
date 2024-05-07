@@ -4,11 +4,11 @@
 #include <boost/beast/http.hpp>
 #include <boost/log/trivial.hpp>
 
-RequestParser::RequestParser(short bytes_transferred, const char data[], ServerPaths server_paths) : server_paths_(server_paths), file_path_("") {
+RequestParser::RequestParser(short bytes_transferred, const char data[], ServerPaths server_paths) 
+: server_paths_(server_paths), file_path_("") {
     auto buffer = boost::asio::buffer(data, bytes_transferred);
     boost::beast::error_code ec;
     this->parser.put(buffer, ec);
-    this->request_type = RequestType::None;
 }
 
 bool RequestParser::isRequestEcho() {
@@ -63,10 +63,6 @@ bool RequestParser::isRequestStatic() {
 
 std::string RequestParser::getFilePath() {
     return this->file_path_;
-}
-
-RequestType RequestParser::getRequestType() {
-    return this->request_type;
 }
 
 boost::beast::string_view RequestParser::getTarget(){
