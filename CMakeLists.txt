@@ -64,6 +64,7 @@ add_library(signal_handler_lib src/signal_handler.cc)
 add_library(echo_handler_lib src/echo_handler.cc)
 add_library(static_handler_lib src/static_handler.cc)
 add_library(request_parser_lib src/request_parser.cc)
+add_library(not_found_handler_lib src/not_found_handler.cc)
 
 target_link_libraries(logger_lib
                     Boost::system 
@@ -99,6 +100,13 @@ target_link_libraries(static_handler_lib
                     Boost::log
                     )
 
+target_link_libraries(not_found_handler_lib
+                    response_handler_lib
+                    Boost::system 
+                    Boost::log_setup 
+                    Boost::log
+                    )
+
 target_link_libraries(echo_handler_lib
                     response_handler_lib
                     Boost::system 
@@ -125,6 +133,7 @@ target_link_libraries(session_lib
                     response_handler_lib
                     echo_handler_lib
                     static_handler_lib
+                    not_found_handler_lib
                     request_parser_lib
                     Boost::system 
                     Boost::log_setup 
@@ -164,8 +173,11 @@ target_link_libraries(config_parser_test config_parser_lib config_interpreter_li
 add_executable(echo_handler_test tests/echo_handler_test.cc)
 target_link_libraries(echo_handler_test echo_handler_lib gtest_main)
 
+add_executable(not_found_handler_test tests/not_found_handler_test.cc)
+target_link_libraries(not_found_handler_test not_found_handler_lib gtest_main)
+
 add_executable(session_test tests/session_test.cc)
-target_link_libraries(session_test session_lib request_parser_lib response_handler_lib echo_handler_lib static_handler_lib logger_lib Boost::log_setup Boost::log gtest_main)
+target_link_libraries(session_test session_lib request_parser_lib response_handler_lib not_found_handler_lib echo_handler_lib static_handler_lib logger_lib Boost::log_setup Boost::log gtest_main)
 
 add_executable(signal_handler_test tests/signal_handler_test.cc)
 target_link_libraries(signal_handler_test signal_handler_lib gtest_main Boost::log_setup Boost::log)
@@ -199,6 +211,7 @@ endif()
 gtest_discover_tests(config_parser_test WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tests)
 gtest_discover_tests(config_interpreter_test WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tests)
 gtest_discover_tests(echo_handler_test WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tests)
+gtest_discover_tests(not_found_handler_test WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tests)
 gtest_discover_tests(session_test WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tests)
 gtest_discover_tests(signal_handler_test WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tests)
 gtest_discover_tests(logger_test WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tests)
@@ -211,4 +224,4 @@ gtest_discover_tests(static_handler_test WORKING_DIRECTORY ${CMAKE_CURRENT_SOURC
 
 # Generate Coverage Report
 include(cmake/CodeCoverageReportConfig.cmake)
-generate_coverage_report(TARGETS server_lib signal_handler_lib logger_lib session_lib config_parser_lib config_interpreter_lib response_handler_lib request_parser_lib echo_handler_lib static_handler_lib TESTS config_parser_test config_interpreter_test  echo_handler_test session_test signal_handler_test logger_test request_parser_test static_handler_test)
+generate_coverage_report(TARGETS server_lib signal_handler_lib logger_lib session_lib config_parser_lib config_interpreter_lib response_handler_lib request_parser_lib echo_handler_lib not_found_handler_lib static_handler_lib TESTS config_parser_test config_interpreter_test not_found_handler_test echo_handler_test session_test signal_handler_test logger_test request_parser_test static_handler_test)

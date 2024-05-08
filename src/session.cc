@@ -1,6 +1,7 @@
 #include "session.h"
 #include "request_parser.h"
 #include "response_handler.h"
+#include "not_found_handler.h"
 #include "echo_handler.h"
 #include "static_handler.h"
 #include <boost/bind.hpp>
@@ -43,6 +44,8 @@ bool session::handle_read(const boost::system::error_code& error, size_t bytes_t
         }
         else if (request_type == Echo) {
             rh = new EchoHandler(bytes_transferred, data_, server_paths_);
+        }else{
+            rh = new NotFoundHandler(bytes_transferred, data_, server_paths_);
         }
 
         std::vector<char> response = rh->create_response();

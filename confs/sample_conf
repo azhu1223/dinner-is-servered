@@ -1,11 +1,14 @@
 server {
   listen 80;
-  paths{
-    echo /;
-    echo /echo1;
-    echo /echo2;
-    static /staticimages /images;
-    static /statictext /text;
-    static /staticroot /;
+  location /echo EchoHandler {
+  }
+  location /staticimages StaticHandler {
+    root ../resources/images;
+  }
+  location /statictext StaticHandler {
+    root ../resources/text;
+  }
+  location /generalstatic StaticHandler {
+    root ../resources;
   }
 }

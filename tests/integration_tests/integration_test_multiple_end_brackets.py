@@ -6,7 +6,7 @@ import argparse
 config_folder = "../configs"
 config_name = "/multiple_end_brackets"
 expected_output_folder = "../integration_test_expected_outputs"
-expected_output_name = "/multiple_end_brackets_expected_output"
+expected_output_name = "/404_not_found"
 
 def setup_parser():
     parser = argparse.ArgumentParser()

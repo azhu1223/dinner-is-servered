@@ -1,6 +1,5 @@
 server {
   listen   80;
-  paths {
-    echo /;
+  location / EchoHandler {
   }
 }

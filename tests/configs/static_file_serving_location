@@ -1,6 +1,6 @@
 server {
   listen 80;
-  paths{
-    static /static /text;
+  location /static StaticHandler{
+    root ../resources/text;
   }
 }

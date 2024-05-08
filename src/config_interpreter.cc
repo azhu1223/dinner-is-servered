@@ -5,6 +5,7 @@
 #include <string>
 #include <vector>
 #include <stdexcept>
+#include <set>
 
 
 const int MINIMUM_VALID_PORT =0;
@@ -18,12 +19,12 @@ int getPort(NginxConfig &config){
 
     for (const auto& statement : config.statements_) {
         // Find the server statement
-        if (statement->tokens_[0] == "server") {
+        if (statement->tokens_.at(0) == "server") {
             for (const auto& nestedStatement : statement->child_block_->statements_) {
                 // Find the listen statement
-                if (nestedStatement->tokens_[0] == "listen") {
+                if (nestedStatement->tokens_.at(0) == "listen") {
                     try{
-                        port = std::stoi(nestedStatement->tokens_[1]);
+                        port = std::stoi(nestedStatement->tokens_.at(1));
                     }catch(const std::invalid_argument& ia){
                         BOOST_LOG_TRIVIAL(error) << "Invalid argument for port. Expected an integer. Setting port to 80.";
                         port =80;
@@ -49,41 +50,51 @@ int getPort(NginxConfig &config){
 ServerPaths getServerPaths(NginxConfig &config){
     std::vector<std::string> echo_paths;
     std::map<std::string, std::string> static_paths_to_server_paths;
+    std::set<std::string> used_locations;
+
 
     for (const auto& statement : config.statements_) {
         BOOST_LOG_TRIVIAL(info) << "Finding server paths";
         // Find the server statement
-        if (statement->tokens_[0] == "server") {
+        if (statement->tokens_.at(0) == "server") {
             for (const auto& lv2Statement : statement->child_block_->statements_) {
-                //Find the paths statement   
-                if (lv2Statement->tokens_[0] == "paths") {
-                    for (const auto& lv3statement : lv2Statement->child_block_->statements_) {
-                        // Find all echo statements
-                        if (lv3statement->tokens_[0] == "echo") {
-                            BOOST_LOG_TRIVIAL(info) << "Adding echo path: " << lv3statement->tokens_[1];
-                            echo_paths.push_back(lv3statement->tokens_[1]);
-                        }
-                        //Find all static statements
-                        else if (lv3statement->tokens_[0] == "static") {
-                            if (static_paths_to_server_paths.find(lv3statement->tokens_[1]) != static_paths_to_server_paths.end()){
-                                BOOST_LOG_TRIVIAL(fatal) << "Duplicate static path: " << lv3statement->tokens_[1];
-                                throw std::runtime_error("Duplicate static path");
+                //Find all location statements   
+                BOOST_LOG_TRIVIAL(info) << lv2Statement->tokens_.at(0);
+                if (lv2Statement->tokens_.at(0) == "location") {
+                    std::string location = lv2Statement->tokens_.at(1);
+                    std::string location_type = lv2Statement->tokens_.at(2);
+
+                    if (used_locations.find(location) != used_locations.end()){
+                        BOOST_LOG_TRIVIAL(fatal) << "The same location (" << location <<") is specified for multiple handlers";
+                        throw std::runtime_error("The same location (" + location + ") is specified for multiple handlers");
+                    }
+                    used_locations.insert(location);
+
+                    //Echo statements
+                    if (location_type == "EchoHandler") {
+                        BOOST_LOG_TRIVIAL(info) << "Adding echo path: " << location;
+                        echo_paths.push_back(location);
+                    }
+                    //Static statements
+                    else if (location_type == "StaticHandler") {
+                        bool found_server_file = false;
+                        for (const auto& lv3statement : lv2Statement->child_block_->statements_) {
+                            //Find the server file location
+                            if (lv3statement->tokens_.at(0) == "root") {
+                                if (found_server_file) {
+                                    BOOST_LOG_TRIVIAL(fatal) << "Duplicate server file location";
+                                    throw std::runtime_error("Duplicate server file location");
+                                }
+                                BOOST_LOG_TRIVIAL(info) << "Adding static path: " << location << " mapping to server location " << lv3statement->tokens_.at(1);
+                                static_paths_to_server_paths[location] = lv3statement->tokens_.at(1);
+                                found_server_file = true;
                             }
-                            BOOST_LOG_TRIVIAL(info) << "Adding static path: " << lv3statement->tokens_[1] << " mapping to server location " << lv3statement->tokens_[2];
-                            static_paths_to_server_paths[lv3statement->tokens_[1]] = lv3statement->tokens_[2];
                         }
                     }
                 }
             }
         }
     }
-
-    //If no paths are set, by default add root to an echo path
-    if (echo_paths.size() == 0 && static_paths_to_server_paths.size() == 0){
-        BOOST_LOG_TRIVIAL(error) << "No paths found. Adding root as an echo path.";;
-        echo_paths.push_back("/");
-    }
-
 
     ServerPaths paths;
     paths.echo_ = echo_paths;

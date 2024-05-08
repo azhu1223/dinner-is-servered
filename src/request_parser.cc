@@ -20,7 +20,7 @@ void RequestParser::setRequestType() {
     bool is_prev_shash = false;
     RequestType request_type = None;
 
-    //Remove back to back slash
+    //Remove back to back slashes and trailing slashes
     for (char c : target) {
         if (c == '/' && is_prev_shash) {
             continue;
@@ -28,6 +28,10 @@ void RequestParser::setRequestType() {
         result += c;
         is_prev_shash = (c == '/');
     }
+    while (result.back() == '/' && result.length() > 1) {
+        result.pop_back();
+    }
+
 
 
     //Look for the closest matching path
@@ -60,7 +64,7 @@ void RequestParser::setRequestType() {
     this->request_type_ = request_type;
 
     if (request_type == Static){
-        this->file_path_ = "../resources" + server_paths_.static_[longest_path] 
+        this->file_path_ = server_paths_.static_[longest_path] 
                         + result.substr(result.find(longest_path) + longest_path.length());
         BOOST_LOG_TRIVIAL(info) << "Set file_path_ to " << file_path_;
     }
