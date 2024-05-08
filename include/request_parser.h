@@ -16,16 +16,17 @@ class RequestParser {
 
     public:
         RequestParser(short bytes_transferred, const char data[], ServerPaths server_paths);
-        bool isRequestEcho();
-        bool isRequestStatic();
         std::string getFilePath();
         boost::beast::string_view getTarget();
+        RequestType getRequestType();
+
 
     private:
+        void setRequestType();
         boost::beast::http::request_parser<boost::beast::http::string_body> parser;
         ServerPaths server_paths_;
         std::string file_path_;
-
+        RequestType request_type_;
 };
 
 #endif
