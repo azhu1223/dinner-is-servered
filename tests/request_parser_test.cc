@@ -44,37 +44,37 @@ TEST_F(ParserFixture, ParserConstructor) {
 TEST_F(ParserFixture, EchoRequest_ReturnsTrue) {
     const char* requestData = "GET /test/echo/something HTTP/1.1\r\nHost: foo.com\r\n\r\n";
     auto parser = createRequestParser(requestData, strlen(requestData));
-    EXPECT_TRUE(parser->getRequestType() == RequestType::Echo);
+    EXPECT_TRUE(parser->isRequestEcho());
 }
 
 TEST_F(ParserFixture, NonEchoRequest_ReturnsFalse) {
     const char* requestData = "GET /test/other/something HTTP/1.1\r\nHost: foo.com\r\n\r\n";
     auto parser = createRequestParser(requestData, strlen(requestData));
-    EXPECT_TRUE(parser->getRequestType() == RequestType::None);
+    EXPECT_FALSE(parser->isRequestEcho());
 }
 
 TEST_F(ParserFixture, StaticRequest_ReturnsTrue) {
     const char* requestData = "GET /test/static/image.png HTTP/1.1\r\nHost: example.com\r\n\r\n";
     auto parser = createRequestParser(requestData, strlen(requestData));
-    EXPECT_TRUE(parser->getRequestType() == RequestType::Static);
+    EXPECT_TRUE(parser->isRequestStatic());
 }
 
 TEST_F(ParserFixture, NonStaticRequest_ReturnsFalse) {
     const char* requestData = "GET /test/api/data HTTP/1.1\r\nHost: example.com\r\n\r\n";
     auto parser = createRequestParser(requestData, strlen(requestData));
-    EXPECT_TRUE(parser->getRequestType() == RequestType::None);
+    EXPECT_FALSE(parser->isRequestStatic());
 }
 
 TEST_F(ParserFixture, EchoRequestWithConsecutiveSlashes_ReturnsTrue) {
     const char* requestData = "GET /test/echo//something HTTP/1.1\r\nHost: example.com\r\n\r\n";
     auto parser = createRequestParser(requestData, strlen(requestData));
-    EXPECT_TRUE(parser->getRequestType() == RequestType::Echo);
+    EXPECT_TRUE(parser->isRequestEcho());
 }
 
 TEST_F(ParserFixture, StaticRequestWithConsecutiveSlashes_ReturnsTrue) {
     const char* requestData = "GET /test/static//image.png HTTP/1.1\r\nHost: example.com\r\n\r\n";
     auto parser = createRequestParser(requestData, strlen(requestData));
-    EXPECT_TRUE(parser->getRequestType() == RequestType::Static);
+    EXPECT_TRUE(parser->isRequestStatic());
 }
 
 TEST_F(ParserFixture, GetTarget) {
