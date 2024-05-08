@@ -36,13 +36,12 @@ bool session::handle_read(const boost::system::error_code& error, size_t bytes_t
             BOOST_LOG_TRIVIAL(error) << "handle_read: Transport endpoint is not connected";
         }
 
-        BOOST_LOG_TRIVIAL(info) << "Is static request? " << parser.isRequestStatic();
-        BOOST_LOG_TRIVIAL(info) << "Is echo request? " << parser.isRequestEcho();
+        RequestType request_type = parser.getRequestType();
         ResponseHandler* rh;
-        if (parser.isRequestStatic()) {
+        if (request_type == Static) {
             rh = new StaticHandler(bytes_transferred, data_, server_paths_, parser.getFilePath());
         }
-        else if (parser.isRequestEcho()) {
+        else if (request_type == Echo) {
             rh = new EchoHandler(bytes_transferred, data_, server_paths_);
         }
 
