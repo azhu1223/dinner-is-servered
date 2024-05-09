@@ -35,26 +35,26 @@ void RequestParser::setRequestType() {
 
 
     //Look for the closest matching path
-    int longsest_size = 0;
+    int longest_size = 0;
     std::string longest_path = "";
     for (auto path_to_location : server_paths_.static_){
         std::string path = path_to_location.first;
-        if(result.find(path) == 0 && path.length() > longsest_size){
-            longsest_size = path.length();
+        if(result.find(path) == 0 && path.length() > longest_size){
+            longest_size = path.length();
             longest_path = path;
             request_type = Static;
         }
     }
     for (auto path : server_paths_.echo_){
-        if(result.find(path) == 0 && path.length() > longsest_size){
-            longsest_size = path.length();
+        if(result.find(path) == 0 && path.length() > longest_size){
+            longest_size = path.length();
             longest_path = path;
             request_type = Echo;
         }
     }
 
     if (request_type == None){
-        BOOST_LOG_TRIVIAL(error) << "There was no mathcing path found for the request";
+        BOOST_LOG_TRIVIAL(error) << "There was no matching path found for the request";
         this->request_type_ = request_type;
         return;
     }
