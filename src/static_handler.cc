@@ -1,4 +1,4 @@
-#include "response_handler.h"
+#include "request_handler.h"
 #include "static_handler.h"
 #include "utils.h"
 #include <boost/log/trivial.hpp>
@@ -6,7 +6,7 @@
 #include <vector>
 #include <string>
 
-StaticHandler::StaticHandler(short bytes_transferred, const char data[], ServerPaths server_paths, std::string file_path) : ResponseHandler(bytes_transferred, data, server_paths), file_path_(file_path) {}
+StaticHandler::StaticHandler(short bytes_transferred, const char data[], ServerPaths server_paths, std::string file_path) : RequestHandler(bytes_transferred, data, server_paths), file_path_(file_path) {}
 
 std::vector<char> StaticHandler::create_response() {
  // Check whether file is found

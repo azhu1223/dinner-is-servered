@@ -1,12 +1,12 @@
 #ifndef STATIC_HANDLER_H
 #define STATIC_HANDLER_H
 
-#include "response_handler.h"
+#include "request_handler.h"
 #include "utils.h"
 #include <vector>
 #include <string>
 
-class StaticHandler : public ResponseHandler {
+class StaticHandler : public RequestHandler {
     public: 
         StaticHandler(short bytes_transferred, const char data[], ServerPaths server_paths, std::string file_path);
         virtual std::vector<char> create_response();

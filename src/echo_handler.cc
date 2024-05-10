@@ -1,8 +1,8 @@
 #include "echo_handler.h"
-#include "response_handler.h"
+#include "request_handler.h"
 #include <string>
 
-EchoHandler::EchoHandler(short bytes_transferred, const char data[], ServerPaths server_paths) : ResponseHandler(bytes_transferred, data, server_paths) {}
+EchoHandler::EchoHandler(short bytes_transferred, const char data[], ServerPaths server_paths) : RequestHandler(bytes_transferred, data, server_paths) {}
 
 std::vector<char> EchoHandler::create_response() {
     const std::string status = "HTTP/1.0 200 OK\r\n";

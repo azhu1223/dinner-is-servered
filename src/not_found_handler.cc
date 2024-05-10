@@ -1,10 +1,10 @@
 #include "not_found_handler.h"
-#include "response_handler.h"
+#include "request_handler.h"
 #include <string>
 #include <boost/log/trivial.hpp>
 
 
-NotFoundHandler::NotFoundHandler(short bytes_transferred, const char data[], ServerPaths server_paths) : ResponseHandler(bytes_transferred, data, server_paths) {}
+NotFoundHandler::NotFoundHandler(short bytes_transferred, const char data[], ServerPaths server_paths) : RequestHandler(bytes_transferred, data, server_paths) {}
 
 std::vector<char> NotFoundHandler::create_response() {
     BOOST_LOG_TRIVIAL(error) << "404 not found: ";

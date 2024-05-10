@@ -1,5 +1,5 @@
-#ifndef RESPONSE_HANDLER_H
-#define RESPONSE_HANDLER_H
+#ifndef REQUEST_HANDLER_H
+#define REQUEST_HANDLER_H
 
 #include "utils.h"
 #include <boost/beast/http/parser.hpp>
@@ -8,9 +8,9 @@
 #include <vector>
 
 
-class ResponseHandler{
+class RequestHandler{
     public:
-        ResponseHandler(short bytes_transferred, const char data[], ServerPaths server_paths);
+        RequestHandler(short bytes_transferred, const char data[], ServerPaths server_paths);
         virtual std::vector<char> create_response() = 0;
     protected:
         ServerPaths server_paths_;

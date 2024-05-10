@@ -1,6 +1,6 @@
 #include "session.h"
 #include "request_parser.h"
-#include "response_handler.h"
+#include "request_handler.h"
 #include "not_found_handler.h"
 #include "echo_handler.h"
 #include "static_handler.h"
@@ -38,7 +38,7 @@ bool session::handle_read(const boost::system::error_code& error, size_t bytes_t
         }
 
         RequestType request_type = parser.getRequestType();
-        ResponseHandler* rh;
+        RequestHandler* rh;
         if (request_type == Static) {
             rh = new StaticHandler(bytes_transferred, data_, server_paths_, parser.getFilePath());
         }
