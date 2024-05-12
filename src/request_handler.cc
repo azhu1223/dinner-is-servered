@@ -16,3 +16,5 @@ RequestHandler::RequestHandler(short bytes_transferred, const char data[], Serve
     this->data = data;
 
 }
+
+RequestHandler::RequestHandler() {}
