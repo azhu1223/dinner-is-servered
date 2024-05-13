@@ -32,7 +32,7 @@ def main():
     # Kill the server
     server_process.kill()
 
-    print(curl_process_output.decode())
+    print(f"Curl process output:\n{curl_process_output.decode()}\n")
 
     # Pipe the curl process stdout to the diff process' stdin.
     ret, err = diff_process.communicate(input=curl_process_output)

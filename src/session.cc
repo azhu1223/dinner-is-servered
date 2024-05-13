@@ -6,7 +6,10 @@
 #include "static_handler.h"
 #include <boost/bind.hpp>
 #include <boost/log/trivial.hpp>
+#include <boost/beast/http.hpp>
 #include <vector>
+
+namespace http = boost::beast::http;
 
 session::session(boost::asio::io_service& io_service, ServerPaths server_paths)
     : socket_(io_service), server_paths_(server_paths) 
@@ -19,18 +22,26 @@ boost::asio::ip::tcp::socket& session::socket() {
 }
 
 bool session::start() {
-        socket_.async_read_some(boost::asio::buffer(data_, max_length),
-            boost::bind(&session::handle_read, this,
-                boost::asio::placeholders::error,
-                boost::asio::placeholders::bytes_transferred));
-        return true; // Asynchronous operation setup was successful
+    http::async_read(socket_, 
+        buff_, 
+        request_, 
+        boost::bind(&session::handle_read, this,
+            boost::asio::placeholders::error,
+            boost::asio::placeholders::bytes_transferred));
+    return true; // Asynchronous operation setup was successful
+    
+    /*socket_.async_read_some(boost::asio::buffer(data_, max_length),
+        boost::bind(&session::handle_read, this,
+            boost::asio::placeholders::error,
+            boost::asio::placeholders::bytes_transferred));*/
 }
 
 bool session::handle_read(const boost::system::error_code& error, size_t bytes_transferred) {
     
     if (!error) {
-        RequestParser parser = RequestParser(bytes_transferred, data_, server_paths_);
+        RequestParser parser = RequestParser(request_, server_paths_);
         boost::system::error_code ec;
+
         BOOST_LOG_TRIVIAL(info) << "Request from " << socket_.remote_endpoint(ec).address() 
             << " for target " << parser.getTarget();
         if (ec){
@@ -39,23 +50,35 @@ bool session::handle_read(const boost::system::error_code& error, size_t bytes_t
 
         RequestType request_type = parser.getRequestType();
         RequestHandler* rh;
-        if (request_type == Static) {
-            rh = new StaticHandler(bytes_transferred, data_, server_paths_, parser.getFilePath());
-        }
-        else if (request_type == Echo) {
-            rh = new EchoHandler(bytes_transferred, data_, server_paths_);
-        }else{
-            rh = new NotFoundHandler(bytes_transferred, data_, server_paths_);
+
+        // Translate request target to local path
+
+        switch(request_type) {
+            case Static:
+                rh = new StaticHandler();
+                request_.target(parser.getFilePath());
+                break;
+            case Echo:
+                rh = new EchoHandler();
+                break;
+            default:
+                rh = new NotFoundHandler();
+                break;
         }
 
-        std::vector<char> response = rh->create_response();
+        response_ = rh->handle_request(request_);
         delete rh;
 
-        boost::asio::async_write(socket_,
-            boost::asio::buffer(response.data(), response.size()),
+        http::async_write(socket_,
+            response_,
             boost::bind(&session::handle_write, this,
-              boost::asio::placeholders::error));
+                boost::asio::placeholders::error));
+
         return true;
+        // boost::asio::async_write(socket_,
+        //     boost::asio::buffer(response.data(), response.size()),
+        //     boost::bind(&session::handle_write, this,
+        //       boost::asio::placeholders::error));
     } else {
         return false;
     }
@@ -70,10 +93,16 @@ bool session::handle_write(const boost::system::error_code& error) {
     }
 
     if (!error) {
-        socket_.async_read_some(boost::asio::buffer(data_, max_length),
+        http::async_read(socket_, 
+            buff_, 
+            request_, 
             boost::bind(&session::handle_read, this,
-              boost::asio::placeholders::error,
-              boost::asio::placeholders::bytes_transferred));
+                boost::asio::placeholders::error,
+                boost::asio::placeholders::bytes_transferred));
+        // socket_.async_read_some(boost::asio::buffer(data_, max_length),
+        //     boost::bind(&session::handle_read, this,
+        //       boost::asio::placeholders::error,
+        //       boost::asio::placeholders::bytes_transferred));
         return true;
     } else {
         // delete this;

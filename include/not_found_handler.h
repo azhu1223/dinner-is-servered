@@ -10,8 +10,8 @@ namespace http = boost::beast::http;
 class NotFoundHandler : public RequestHandler {
     public:
         NotFoundHandler();
-        NotFoundHandler(short bytes_transferred, const char data[], ServerPaths server_paths);
-        virtual std::vector<char> create_response();
+        //NotFoundHandler(short bytes_transferred, const char data[], ServerPaths server_paths);
+        //virtual std::vector<char> create_response();
         virtual http::response<http::vector_body<char>> handle_request(const http::request<http::vector_body<char>>& req);
 };
 

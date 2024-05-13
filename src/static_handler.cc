@@ -8,9 +8,9 @@
 
 StaticHandler::StaticHandler() : RequestHandler() {}
 
-StaticHandler::StaticHandler(short bytes_transferred, const char data[], ServerPaths server_paths, std::string file_path) : RequestHandler(bytes_transferred, data, server_paths), file_path_(file_path) {}
+//StaticHandler::StaticHandler(short bytes_transferred, const char data[], ServerPaths server_paths, std::string file_path) : RequestHandler(bytes_transferred, data, server_paths), file_path_(file_path) {}
 
-std::vector<char> StaticHandler::create_response() {
+/*std::vector<char> StaticHandler::create_response() {
  // Check whether file is found
     std::ifstream file(file_path_, std::ios::binary);
     if (!file.is_open()) {
@@ -72,7 +72,7 @@ std::vector<char> StaticHandler::generate_500_response() {
                            "Content-Length: 17\r\n\r\n"
                            "500 Internal Server Error\r\n\r\n";
     return std::vector<char>(response.begin(), response.end());
-}
+}*/
 
 std::string StaticHandler::get_response_content_type(const std::string& file_path) {
     size_t extension_pos = file_path.find_last_of(".");
@@ -102,6 +102,8 @@ std::string StaticHandler::get_response_content_type(const std::string& file_pat
 
 http::response<http::vector_body<char>> StaticHandler::handle_request(const http::request<http::vector_body<char>>& req) {
     http::response<http::vector_body<char>> response;
+
+    BOOST_LOG_TRIVIAL(info) << "The target file is " << req.target().to_string();
 
     std::ifstream file(req.target().to_string(), std::ios::in | std::ios::binary);
 

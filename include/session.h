@@ -3,8 +3,12 @@
 
 #include "utils.h"
 #include <boost/asio.hpp>
+#include <boost/beast/core.hpp>
+#include <boost/beast/http.hpp>
 #include <string>
 #include <vector>
+
+namespace http = boost::beast::http;
 
 class session {
 public:
@@ -19,6 +23,8 @@ private:
     boost::asio::ip::tcp::socket socket_;
     enum { max_length = 1024 };
     char data_[max_length];
-    boost::asio::streambuf request_;
+    boost::beast::flat_buffer buff_;
+    http::response<http::vector_body<char>> response_;
+    http::request<http::vector_body<char>> request_;
 };
 #endif // SESSION_H

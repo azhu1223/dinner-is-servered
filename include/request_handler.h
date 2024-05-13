@@ -12,8 +12,8 @@ namespace http = boost::beast::http;
 class RequestHandler{
     public:
         RequestHandler();
-        RequestHandler(short bytes_transferred, const char data[], ServerPaths server_paths);
-        virtual std::vector<char> create_response() = 0;
+        //RequestHandler(short bytes_transferred, const char data[], ServerPaths server_paths);
+        //virtual std::vector<char> create_response() = 0;
         virtual http::response<http::vector_body<char>> handle_request(const http::request<http::vector_body<char>>& req) = 0;
     protected:
         ServerPaths server_paths_;
