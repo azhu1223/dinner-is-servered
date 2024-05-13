@@ -5,6 +5,10 @@
 #include "signal_handler.h"
 #include <boost/log/trivial.hpp>
 #include <iostream>
+#include "registry.h"
+#include "echo_handler.h"
+#include "static_handler.h"
+#include "not_found_handler.h"
 
 
 int main(int argc, char* argv[]) {
@@ -24,6 +28,11 @@ int main(int argc, char* argv[]) {
 
         //Intialize termination signal handler
         signal (SIGINT, sig_handler);
+
+        //Register request handlers
+        Registry::RegisterRequestHandler(Echo, EchoHandlerFactory::create);
+        Registry::RegisterRequestHandler(Static, StaticHandlerFactory::create);
+        Registry::RegisterRequestHandler(None, NotFoundHandlerFactory::create);
         
         boost::asio::io_service io_service;
 
@@ -34,8 +43,10 @@ int main(int argc, char* argv[]) {
             BOOST_LOG_TRIVIAL(fatal) << "Error in parsing the Nginx config file\n";
             return 1;
         }
+        ConfigInterpreter::setServerPaths(config);
 
-        server s(io_service, getPort(config), getServerPaths(config));
+
+        server s(io_service, ConfigInterpreter::getPort(config));
 
         s.run();
     } catch (const std::exception& e) {

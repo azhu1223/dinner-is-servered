@@ -9,14 +9,23 @@
 #include  <string>
 #include "utils.h"
 
-//Retrieves the port from the Nginx config file
-//Returns the port if found, otherwise returns 80 (default)
-//If port is set to a non integer, will still retrun 80
-int getPort(NginxConfig &config);
+class ConfigInterpreter{
+    public:
+        //Retrieves the port from the Nginx config file
+        //Returns the port if found, otherwise returns 80 (default)
+        //If port is set to a non integer, will still retrun 80
+        static int getPort(NginxConfig &config);
+
+        static void setServerPaths(NginxConfig &config);
+
+        static void setServerPaths(ServerPaths server_paths);
 
 
-//Retrieves the paths from the Nginx config file
-//Returns: [ [ECHO_PATHS], <STATIC_PATHS, SERVER_LOCATION> ]
-ServerPaths getServerPaths(NginxConfig &config);
+        static ServerPaths getServerPaths();
+    
+    private:
+        static ServerPaths server_paths_;
+
+};
 
 #endif

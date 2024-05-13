@@ -65,6 +65,7 @@ add_library(echo_handler_lib src/echo_handler.cc)
 add_library(static_handler_lib src/static_handler.cc)
 add_library(request_parser_lib src/request_parser.cc)
 add_library(not_found_handler_lib src/not_found_handler.cc)
+add_library(registry_lib src/registry.cc)
 
 target_link_libraries(logger_lib
                     Boost::system 
@@ -95,6 +96,7 @@ target_link_libraries(config_interpreter_lib
 
 target_link_libraries(static_handler_lib
                     request_handler_lib
+                    request_parser_lib
                     Boost::system 
                     Boost::log_setup 
                     Boost::log
@@ -129,6 +131,7 @@ target_link_libraries(request_parser_lib
                     )
 
 target_link_libraries(session_lib 
+                    registry_lib
                     config_interpreter_lib
                     request_handler_lib
                     echo_handler_lib
@@ -149,6 +152,12 @@ target_link_libraries(server_lib
                     Boost::log
                     )
 
+target_link_libraries(registry_lib
+                    request_handler_lib
+                    request_parser_lib
+                    )
+
+
 # Executables and target Libraries
 add_executable(server src/_main.cc)
 target_link_libraries(server 
@@ -157,6 +166,7 @@ target_link_libraries(server
                     config_interpreter_lib
                     logger_lib
                     signal_handler_lib
+                    registry_lib
                     Boost::system 
                     Boost::log_setup 
                     Boost::log
@@ -196,6 +206,9 @@ target_link_libraries(static_handler_test
                       Boost::log_setup
                       Boost::log)
 
+add_executable(registry_test tests/registry_test.cc)
+target_link_libraries(registry_test registry_lib echo_handler_lib static_handler_lib not_found_handler_lib gtest_main)
+
 # Add Integration Tests
 if (NOT CMAKE_BUILD_TYPE STREQUAL Coverage)
     add_test(NAME IntegrationTests.example_config COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/tests/integration_tests/integration_test_example_config.py ${CMAKE_CURRENT_BINARY_DIR}/bin/server WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tests/integration_tests/)
@@ -218,10 +231,11 @@ gtest_discover_tests(logger_test WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/t
 gtest_discover_tests(request_parser_test WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tests)
 
 gtest_discover_tests(static_handler_test WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tests)
+gtest_discover_tests(registry_test WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tests)
 
 
 
 
 # Generate Coverage Report
 include(cmake/CodeCoverageReportConfig.cmake)
-generate_coverage_report(TARGETS server_lib signal_handler_lib logger_lib session_lib config_parser_lib config_interpreter_lib request_handler_lib request_parser_lib echo_handler_lib not_found_handler_lib static_handler_lib TESTS config_parser_test config_interpreter_test not_found_handler_test echo_handler_test session_test signal_handler_test logger_test request_parser_test static_handler_test)
+generate_coverage_report(TARGETS server_lib signal_handler_lib logger_lib session_lib config_parser_lib config_interpreter_lib request_handler_lib request_parser_lib echo_handler_lib not_found_handler_lib static_handler_lib registry_lib TESTS config_parser_test config_interpreter_test not_found_handler_test echo_handler_test session_test signal_handler_test logger_test request_parser_test static_handler_test registry_test)

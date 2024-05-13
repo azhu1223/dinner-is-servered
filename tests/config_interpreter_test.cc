@@ -15,7 +15,7 @@ TEST_F(NginxConfigInterpreterTest, PortNotFound) {
     config = new NginxConfig;
 
     //Execution
-    int port = getPort(*config);
+    int port = ConfigInterpreter::getPort(*config);
     
     //Assertion
     EXPECT_EQ(port, 80);
@@ -37,7 +37,7 @@ TEST_F(NginxConfigInterpreterTest, CorrectPortFound) {
     port_statement->tokens_.emplace_back(expected_port);
 
     //Execution
-    int port = getPort(*config);
+    int port = ConfigInterpreter::getPort(*config);
     
     //Assertion
     EXPECT_EQ(port, std::stoi(expected_port));
@@ -60,7 +60,7 @@ TEST_F(NginxConfigInterpreterTest, OutOfRangePort) {
     port_statement->tokens_.emplace_back(input_port);
 
     //Execution
-    int port = getPort(*config);
+    int port = ConfigInterpreter::getPort(*config);
     
     //Assertion
     EXPECT_EQ(port, expected_port);
@@ -83,7 +83,7 @@ TEST_F(NginxConfigInterpreterTest, OutOfRangeInt) {
     port_statement->tokens_.emplace_back(input_port);
 
     //Execution
-    int port = getPort(*config);
+    int port = ConfigInterpreter::getPort(*config);
     
     //Assertion
     EXPECT_EQ(port, expected_port);
@@ -106,13 +106,13 @@ TEST_F(NginxConfigInterpreterTest, NonIntegerPort) {
     port_statement->tokens_.emplace_back(input_port);
 
     //Execution
-    int port = getPort(*config);
+    int port = ConfigInterpreter::getPort(*config);
     
     //Assertion
     EXPECT_EQ(port, expected_port);
 }
 
-// Tests for getServerPaths
+// // Tests for getServerPaths
 
 // Correct paths found
 TEST_F(NginxConfigInterpreterTest, CorrectPathsFound) {
@@ -152,7 +152,8 @@ TEST_F(NginxConfigInterpreterTest, CorrectPathsFound) {
 
 
     // Execution
-    ServerPaths server_paths = getServerPaths(*config);
+    ConfigInterpreter::setServerPaths(*config);
+    ServerPaths server_paths = ConfigInterpreter::getServerPaths();
     
     // Assertion
     ASSERT_EQ(server_paths.echo_.size(), 1);
@@ -167,8 +168,9 @@ TEST_F(NginxConfigInterpreterTest, NoPaths) {
     config = new NginxConfig;
 
     // Execution
-    ServerPaths server_paths = getServerPaths(*config);
-    
+    ConfigInterpreter::setServerPaths(*config);
+    ServerPaths server_paths = ConfigInterpreter::getServerPaths();    
+
     // Assertion
     EXPECT_TRUE(server_paths.echo_.empty());
     EXPECT_TRUE(server_paths.static_.empty());
@@ -213,8 +215,8 @@ TEST_F(NginxConfigInterpreterTest, PathSpecifiedTwice) {
 
     // Execution
     try{
-        ServerPaths server_paths = getServerPaths(*config);
-    }
+        ConfigInterpreter::setServerPaths(*config);
+        ServerPaths server_paths = ConfigInterpreter::getServerPaths();    }
     //Expect
     catch(std::runtime_error const & err){
         BOOST_LOG_TRIVIAL(info) << "Error: "<< err.what();
@@ -256,7 +258,8 @@ TEST_F(NginxConfigInterpreterTest, RootSpecifiedTwice) {
 
     // Execution
     try{
-        ServerPaths server_paths = getServerPaths(*config);
+        ConfigInterpreter::setServerPaths(*config);
+        ServerPaths server_paths = ConfigInterpreter::getServerPaths();
     }
     //Expect
     catch(std::runtime_error const & err){

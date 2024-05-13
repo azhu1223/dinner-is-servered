@@ -8,14 +8,13 @@
 #include <set>
 
 
-const int MINIMUM_VALID_PORT =0;
-const int MAXIMUM_VALID_PORT = 65535;
-
 //Retrieves the port from the Nginx config file
 //Returns the port if found, otherwise returns 80 (default)
 //If port is set to a non integer, will still retrun 80
-int getPort(NginxConfig &config){
+int ConfigInterpreter::getPort(NginxConfig &config){
     int port = 80;
+    const int MINIMUM_VALID_PORT =0;
+    const int MAXIMUM_VALID_PORT = 65535;
 
     for (const auto& statement : config.statements_) {
         // Find the server statement
@@ -45,9 +44,10 @@ int getPort(NginxConfig &config){
     return port;
 }
 
-//Retrieves the paths from the Nginx config file
-//Returns: [ [ECHO_PATHS], <STATIC_PATHS, SERVER_LOCATION> ]
-ServerPaths getServerPaths(NginxConfig &config){
+ServerPaths ConfigInterpreter::server_paths_;
+
+
+void ConfigInterpreter::setServerPaths(NginxConfig &config){
     std::vector<std::string> echo_paths;
     std::map<std::string, std::string> static_paths_to_server_paths;
     std::set<std::string> used_locations;
@@ -101,5 +101,13 @@ ServerPaths getServerPaths(NginxConfig &config){
     paths.static_ = static_paths_to_server_paths;
 
 
-    return paths;
+    server_paths_ = paths;
+}
+
+ServerPaths ConfigInterpreter::getServerPaths(){
+    return server_paths_;
+}
+
+void ConfigInterpreter::setServerPaths(ServerPaths server_paths){
+    server_paths_ = server_paths;
 }

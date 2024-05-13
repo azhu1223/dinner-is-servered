@@ -9,32 +9,28 @@ class SessionFixture : public :: testing::Test {
     
     protected:
         boost::asio::io_service io_service;
-        ServerPaths server_paths;
         std::unique_ptr<session> session_;
         void SetUp() override {
-        std::vector<std::string> echo_paths;
-        echo_paths.push_back("/");
-        server_paths.echo_ = echo_paths;
-        session_ = std::make_unique<session>(io_service, server_paths);
+        session_ = std::make_unique<session>(io_service);
         }
 
 };
 
 
 TEST_F(SessionFixture, SessionConstructor) {
-    session s(io_service, server_paths);
+    session s(io_service);
     EXPECT_TRUE(true);
 }
 
 TEST_F(SessionFixture, SessionSocket) {
-    session s(io_service, server_paths);
+    session s(io_service);
     boost::asio::ip::tcp::socket& socket = s.socket();
     EXPECT_TRUE(true);
 }
 
 
 TEST_F(SessionFixture, StartFunction) {
-    session s(io_service, server_paths);
+    session s(io_service);
     bool result = s.start();
     EXPECT_TRUE(result);  
 }
@@ -60,13 +56,12 @@ TEST_F(SessionFixture, HandleSocketClosure) {
 }
 TEST_F(SessionFixture, DestructorTest) {
     {
-        auto local_session = std::make_unique<session>(io_service, server_paths);
+        auto local_session = std::make_unique<session>(io_service);
         local_session->start();  // Optionally start the session
     }  // local_session goes out of scope and is destroyed
     // You can check logs or other indicators to ensure destruction went smoothly
     EXPECT_TRUE(true);  // Mainly looking for absence of crashes or errors
 }
-
 
 
 
