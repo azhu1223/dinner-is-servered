@@ -120,25 +120,23 @@ File logging can be disabled when running the server via the `--disable-file-log
 
 ## Current Source Code Overview
 
-**TODO**
+
+The functionality of this repository is held together by _main.cc, which sets up the server instance and the basic logging, signal handling functionalities helpful during the whole request-response communication process. Next, it sets up a config_parser instance to parse the config file for the server for ports and different path locations, ensuring that these aspects are all registered properly. Following this, the various request handlers (echo, static, none), which are all dependent on the parent (abstract class) request handler, are properly registered through the registry. Depending on the request send to the server, the request is sent through the dispatcher to one of the 3 request handlers appropriately. The request_parser parses through the incoming requests over a session to ensure communication. 
 
 
 ## Development
 
 To add a new request handler, it must inherit from and implement the interface defined by RequestHander in RequestHandler.h. The new handler must implement the pure virtual function *handle_request*. This function receives an *http::request\<http::vector_body<char>\>* and returns a *http::response\<http::vector_body<char>\>*, where *http* is the namespace *boost::beast::http*. 
-
 Next, A factory class must be defined that contains a *create* function that has no arguments and only returns a dynamically allocated instance of the new request handler. 
-
 A new enum that represents the new request type handled by this handler must be added to the enum RequestType in *request_dispatcher.h*. Then, a line must be added to _main.cc to register the new factory function with the Registry and associate the new enum that was created with its factory function. This should be done with the function *Registry::RegisterRequestHandler*, which takes in the enum defined previously, as well as the factory function defined above.
-
 Finally, *RequestDispatcher::getRequestType* must be modified to be able to detect the type of request a response target represents.
-
 An example of the above process is given with NotFoundHandler:
 The class and its factory class is declared in *not_found_handler.h* and their functions are defined in *not_found_handler.cc*. Its *RequestType* enum defined in *request_dispatcher.h* is called *None*. It's registered to the Registry in *_main.cc* with the line
 ```
 Registry::RegisterRequestHandler(None, NotFoundHandlerFactory::create);
 ```
 Finally, any request with a target that doesn't match any path provided in the config file provided to the server results in *None* being returned from *RequestDispatcher::getRequestType*, signifying that the NotFoundHandler should be dispatched. In addition, targets that match with a path designated for static file serving, but which also reference files that do not actually exist also result in *None* being returned.
+
 ## Test Development
 
 To set up additional unit tests, depending on the class(es) you would like to test, you will need to add the implementation of the tests in a test file under /tests directory. Most tests we have written use either basic isolated tests (TEST() in GTest), or fixtures (TEST_F()) to share variables and other state elements. Other test files in this directory provide a good reference guide. Then, to ensure that these tests are run, you will also need to amend the CMakeLists.txt to integrate into execution. Start by adding an executable with an alias for the file, as shown in an example below (sets alias `server_test`). Additionally, you need to link the test file with its corresponding alias library and with gtest_main, also as shown below - 
