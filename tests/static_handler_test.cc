@@ -88,3 +88,4 @@ TEST_F(StaticHandlerTest, Factory) {
 
     EXPECT_TRUE(factory_genereated_handler != nullptr);
 }
+

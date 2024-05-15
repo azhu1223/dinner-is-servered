@@ -1,5 +1,5 @@
 #include "session.h"
-#include "request_parser.h"
+#include "request_dispatcher.h"
 #include "request_handler.h"
 #include "not_found_handler.h"
 #include "echo_handler.h"
@@ -9,7 +9,6 @@
 #include <boost/beast/http.hpp>
 #include <vector>
 #include "registry.h"
-
 
 namespace http = boost::beast::http;
 session::session(boost::asio::io_service& io_service)
@@ -34,7 +33,7 @@ bool session::handle_read(const boost::system::error_code& error, size_t bytes_t
     if (!error) {
 
         //Determine the request type and get request object
-        RequestType request_type = RequestParser::getRequestType(request_);
+        RequestType request_type = RequestDispatcher::getRequestType(request_);
         boost::system::error_code ec;
 
         BOOST_LOG_TRIVIAL(info) << "Request from " << socket_.remote_endpoint(ec).address() 

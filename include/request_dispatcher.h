@@ -14,7 +14,7 @@ enum RequestType {
     None
 };
 
-class RequestParser {
+class RequestDispatcher {
 
     public:
         static RequestType getRequestType(const boost::beast::http::request<boost::beast::http::vector_body<char>>& request);

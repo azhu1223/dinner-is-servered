@@ -1,4 +1,4 @@
-#include "request_parser.h"
+#include "request_dispatcher.h"
 #include "config_interpreter.h"
 #include "utils.h"
 #include <boost/beast/http/parser.hpp>
@@ -6,8 +6,7 @@
 #include <boost/log/trivial.hpp>
 #include <fstream>
 
-
-RequestType RequestParser::getRequestType(const boost::beast::http::request<boost::beast::http::vector_body<char>>& request){
+RequestType RequestDispatcher::getRequestType(const boost::beast::http::request<boost::beast::http::vector_body<char>>& request){
     boost::beast::string_view target = request.target();
     BOOST_LOG_TRIVIAL(info) << "Paths are: ";
     ServerPaths server_paths = ConfigInterpreter::getServerPaths();
@@ -79,7 +78,7 @@ RequestType RequestParser::getRequestType(const boost::beast::http::request<boos
     return request_type;
 }
 
-std::string RequestParser::getStaticFilePath
+std::string RequestDispatcher::getStaticFilePath
     (const boost::beast::http::request<boost::beast::http::vector_body<char>>& request){
 
     boost::beast::string_view target = request.target();

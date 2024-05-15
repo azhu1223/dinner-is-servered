@@ -4,7 +4,7 @@
 #include <map>
 #include <string>
 #include "request_handler.h"
-#include "request_parser.h"
+#include "request_dispatcher.h"
 
 typedef RequestHandler* (*RequestHandlerFactory)();
 

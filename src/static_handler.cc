@@ -5,7 +5,7 @@
 #include <fstream>
 #include <vector>
 #include <string>
-#include "request_parser.h"
+#include "request_dispatcher.h"
 
 StaticHandler::StaticHandler() : RequestHandler() {}
 
@@ -37,7 +37,7 @@ std::string StaticHandler::get_response_content_type(const std::string& file_pat
 
 http::response<http::vector_body<char>> StaticHandler::handle_request(const http::request<http::vector_body<char>>& req) {
     http::response<http::vector_body<char>> response;
-    std::string file_path = RequestParser::getStaticFilePath(req);
+    std::string file_path = RequestDispatcher::getStaticFilePath(req);
 
     std::ifstream file(file_path, std::ios::in | std::ios::binary);
 

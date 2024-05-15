@@ -1,8 +1,8 @@
-#include "request_parser.h"
+#include "request_dispatcher.h"
 #include "gtest/gtest.h"
 #include "config_interpreter.h"
 
-class ParserFixture : public ::testing::Test {
+class DispatcherFixture : public ::testing::Test {
 protected:
     ServerPaths kServerPaths;
 
@@ -18,43 +18,43 @@ protected:
 };
 
 
-TEST_F(ParserFixture, GetEchoRequestType) {
+TEST_F(DispatcherFixture, GetEchoRequestType) {
 
     boost::string_view target = "/test/echo1/foo.txt";
     GTEST_LOG_(INFO) << "Creating request for target " << target;
     boost::beast::http::request<boost::beast::http::vector_body<char>> request(boost::beast::http::verb::get, target, 11U);
-    EXPECT_TRUE(RequestParser::getRequestType(request) == RequestType::Echo);
+    EXPECT_TRUE(RequestDispatcher::getRequestType(request) == RequestType::Echo);
 }
 
-TEST_F(ParserFixture, GetStaticRequestType) {
+TEST_F(DispatcherFixture, GetStaticRequestType) {
 
     boost::string_view target = "/staticroot"; //Just using root instead of real file
     GTEST_LOG_(INFO) << "Creating request for target " << target;
     boost::beast::http::request<boost::beast::http::vector_body<char>> request(boost::beast::http::verb::get, target, 11U);
-    EXPECT_TRUE(RequestParser::getRequestType(request) == RequestType::Static);
+    EXPECT_TRUE(RequestDispatcher::getRequestType(request) == RequestType::Static);
 }
 
 
-TEST_F(ParserFixture, Get404RequestType) {
+TEST_F(DispatcherFixture, Get404RequestType) {
 
     boost::string_view target = "/this/path/isnt/real";
     GTEST_LOG_(INFO) << "Creating request for target " << target;
     boost::beast::http::request<boost::beast::http::vector_body<char>> request(boost::beast::http::verb::get, target, 11U);
-    EXPECT_TRUE(RequestParser::getRequestType(request) == RequestType::None);
+    EXPECT_TRUE(RequestDispatcher::getRequestType(request) == RequestType::None);
 }
 
-TEST_F(ParserFixture, Get404RequestTypeOnStaticPath) {
+TEST_F(DispatcherFixture, Get404RequestTypeOnStaticPath) {
 
     boost::string_view target = "/test/static1/notrealfile";
     GTEST_LOG_(INFO) << "Creating request for target " << target;
     boost::beast::http::request<boost::beast::http::vector_body<char>> request(boost::beast::http::verb::get, target, 11U);
-    EXPECT_TRUE(RequestParser::getRequestType(request) == RequestType::None);
+    EXPECT_TRUE(RequestDispatcher::getRequestType(request) == RequestType::None);
 }
 
-TEST_F(ParserFixture, GetStaticFilePath) {
+TEST_F(DispatcherFixture, GetStaticFilePath) {
 
     boost::string_view target = "/staticroot"; //Just using root instead of real file
     GTEST_LOG_(INFO) << "Creating request for target " << target;
     boost::beast::http::request<boost::beast::http::vector_body<char>> request(boost::beast::http::verb::get, target, 11U);
-    EXPECT_TRUE(RequestParser::getStaticFilePath(request) == "/");
+    EXPECT_TRUE(RequestDispatcher::getStaticFilePath(request) == "/");
 }
