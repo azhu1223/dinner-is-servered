@@ -141,7 +141,39 @@ Registry::RegisterRequestHandler(None, NotFoundHandlerFactory::create);
 Finally, any request with a target that doesn't match any path provided in the config file provided to the server results in *None* being returned from *RequestDispatcher::getRequestType*, signifying that the NotFoundHandler should be dispatched. In addition, targets that match with a path designated for static file serving, but which also reference files that do not actually exist also result in *None* being returned.
 ## Test Development
 
-Adding to cmake **TODO**
+To set up additional unit tests, depending on the class(es) you would like to test, you will need to add the implementation of the tests in a test file under /tests directory. Most tests we have written use either basic isolated tests (TEST() in GTest), or fixtures (TEST_F()) to share variables and other state elements. Other test files in this directory provide a good reference guide. Then, to ensure that these tests are run, you will also need to amend the CMakeLists.txt to integrate into execution. Start by adding an executable with an alias for the file, as shown in an example below (sets alias `server_test`). Additionally, you need to link the test file with its corresponding alias library and with gtest_main, also as shown below - 
+
+add_executable(server_test tests/server_test.cc)
+target_link_libraries(server_test server_lib gtest_main)
+
+Then, add a command for gtest to run the tests, also setting a working directory as "reference" for the test file, as shown here - 
+gtest_discover_tests(server_test WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tests)
+
+Finally, to include the tests in the coverage report, you will need to add the test alias under the TESTS section of generate_coverage_report (at bottom of CMakeLists), shown here. 
+
+generate_coverage_report(TARGETS server_lib signal_handler_lib logger_lib session_lib config_parser_lib config_interpreter_lib request_handler_lib request_dispatcher_lib echo_handler_lib not_found_handler_lib static_handler_lib registry_lib TESTS config_parser_test config_interpreter_test not_found_handler_test echo_handler_test session_test server_test signal_handler_test logger_test request_dispatcher_test static_handler_test registry_test)
+
+Note that this setup is only needed if you intend to create new test files. If you intend to operate in an existing test file, you just need to remake the build/build-coverage directory after writing the tests and should be good to go. If you are adding tests in such a way that the file dependencies are changed, then you will also need to make an adjustment to the target_link_libraries() portion of the corresponding alias in CMakeLists. For example, currently, these are the dependencies for signal_handler, as outlined here - 
+
+target_link_libraries(signal_handler_lib
+                    Boost::system 
+                    Boost::log_setup 
+                    Boost::log
+                    )
+
+If, for some reason, you want to write tests such that signal_handler_lib is dependent on another file (say logger_lib), you will need to append logger_lib executable into this function, which will make it look like this - 
+
+target_link_libraries(signal_handler_lib
+                    Boost::system 
+                    Boost::log_setup 
+                    Boost::log
+                    logger_lib
+                    )
+
+To set up additional integration tests, you will need to add test scripts under test/integration_tests (see prior implementations on how to create such tests), with examples of expected outputs in tests/integration_test_expected_outputs. To add these tests to CMakeLists, simply add it as such in the section declaring integration tests. You will need to change the extension of the IntegrationTests string to your test name, and change the current file for integration test under the COMMAND flag. Everything else can be left the same. See example below for elucidation.  
+
+    add_test(NAME IntegrationTests.example_config COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/tests/integration_tests/integration_test_example_config.py ${CMAKE_CURRENT_BINARY_DIR}/bin/server WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tests/integration_tests/)
+
 
 ### Integration Tests
 
