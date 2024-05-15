@@ -11,7 +11,8 @@ namespace http = boost::beast::http;
 enum RequestType {
     Static,
     Echo,
-    None
+    None,
+    BogusType // Just for testing purposes, no functional relevance.
 };
 
 class RequestDispatcher {

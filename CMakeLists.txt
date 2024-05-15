@@ -183,6 +183,9 @@ target_link_libraries(config_parser_test config_parser_lib config_interpreter_li
 add_executable(echo_handler_test tests/echo_handler_test.cc)
 target_link_libraries(echo_handler_test echo_handler_lib gtest_main)
 
+add_executable(server_test tests/server_test.cc)
+target_link_libraries(server_test server_lib gtest_main)
+
 add_executable(not_found_handler_test tests/not_found_handler_test.cc)
 target_link_libraries(not_found_handler_test not_found_handler_lib gtest_main)
 
@@ -232,10 +235,11 @@ gtest_discover_tests(request_dispatcher_test WORKING_DIRECTORY ${CMAKE_CURRENT_S
 
 gtest_discover_tests(static_handler_test WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tests)
 gtest_discover_tests(registry_test WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tests)
+gtest_discover_tests(server_test WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tests)
 
 
 
 
 # Generate Coverage Report
 include(cmake/CodeCoverageReportConfig.cmake)
-generate_coverage_report(TARGETS server_lib signal_handler_lib logger_lib session_lib config_parser_lib config_interpreter_lib request_handler_lib request_dispatcher_lib echo_handler_lib not_found_handler_lib static_handler_lib registry_lib TESTS config_parser_test config_interpreter_test not_found_handler_test echo_handler_test session_test signal_handler_test logger_test request_dispatcher_test static_handler_test registry_test)
+generate_coverage_report(TARGETS server_lib signal_handler_lib logger_lib session_lib config_parser_lib config_interpreter_lib request_handler_lib request_dispatcher_lib echo_handler_lib not_found_handler_lib static_handler_lib registry_lib TESTS config_parser_test config_interpreter_test not_found_handler_test echo_handler_test session_test server_test signal_handler_test logger_test request_dispatcher_test static_handler_test registry_test)

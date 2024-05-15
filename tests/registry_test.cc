@@ -13,3 +13,9 @@ TEST(RegistryTest, RequestHandlers){
     EXPECT_TRUE(Registry::GetRequestHandler(Static) != nullptr);
     EXPECT_TRUE(Registry::GetRequestHandler(None) != nullptr);
 }
+
+// Nullptr test
+TEST(RegistryTest, GetRequestHandlerNonExistentType) {
+    RequestHandler* handler = Registry::GetRequestHandler(BogusType);
+    EXPECT_EQ(handler, nullptr);
+}

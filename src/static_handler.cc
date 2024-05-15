@@ -57,12 +57,6 @@ http::response<http::vector_body<char>> StaticHandler::handle_request(const http
 
     std::string response_content_type = this->get_response_content_type(file_path);
 
-    if (response_content_type.empty()) {
-        BOOST_LOG_TRIVIAL(error) << "Unsupported file type";
-        response = http::response<http::vector_body<char>>(http::status::internal_server_error, 11U);
-        return response;
-    }
-
     // Allocate buffer for file
     std::vector<char> res(file_size);
 

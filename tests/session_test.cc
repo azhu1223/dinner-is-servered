@@ -5,6 +5,7 @@
 #include <vector>
 #include <string>
 
+
 class SessionFixture : public :: testing::Test {
     
     protected:
@@ -64,4 +65,26 @@ TEST_F(SessionFixture, DestructorTest) {
 }
 
 
+
+TEST_F(SessionFixture, HandleReadError) {
+    // Setup mocks and expectations
+    session s(io_service);
+    boost::system::error_code ec = boost::asio::error::operation_aborted;
+    size_t bytes_transferred = 1024;
+
+    bool result = s.handle_read(ec, bytes_transferred);
+
+    EXPECT_FALSE(result);
+}
+
+TEST_F(SessionFixture, HandleWriteError) {
+    // Setup mocks and expectations
+    session s(io_service);
+    boost::system::error_code ec = boost::asio::error::operation_aborted;
+    size_t bytes_transferred = 1024;
+
+    bool result = s.handle_write(ec);
+
+    EXPECT_FALSE(result);
+}
 

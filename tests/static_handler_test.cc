@@ -4,24 +4,31 @@
 #include <vector>
 #include <fstream>
 #include "config_interpreter.h"
+#include <gmock/gmock.h>
+#include <boost/beast/http.hpp>
+#include "request_dispatcher.h"
+
 
 namespace http = boost::beast::http;
 
-// Fixture for setting up the StaticHandler and common utilities
 class StaticHandlerTest : public ::testing::Test {
 protected:
-    // Setup common variables here if needed
     void SetUp() override {
-        // Initialize objects used in multiple tests
+        handler = new StaticHandler();
     }
+
+    void TearDown() override {
+        delete handler;
+    }
+
+    StaticHandler* handler;
 };
 
-// Test content type determination
+
 TEST_F(StaticHandlerTest, DeterminesContentType) {
-    // Create a StaticHandler
+
     StaticHandler handler;
 
-    // Validate the content type
     EXPECT_EQ(handler.get_response_content_type("test.jpeg"), "image/jpeg");
     EXPECT_EQ(handler.get_response_content_type("test.html"), "text/html");
     EXPECT_EQ(handler.get_response_content_type("test.jpg"), "image/jpeg");
@@ -29,7 +36,6 @@ TEST_F(StaticHandlerTest, DeterminesContentType) {
     EXPECT_EQ(handler.get_response_content_type("test.zip"), "application/zip");
     EXPECT_EQ(handler.get_response_content_type("nofileextension"), "");
     EXPECT_EQ(handler.get_response_content_type("test.notsupportedfileextension"), "");
-
 
 }
 
@@ -87,5 +93,77 @@ TEST_F(StaticHandlerTest, Factory) {
     auto factory_genereated_handler = StaticHandlerFactory::create();
 
     EXPECT_TRUE(factory_genereated_handler != nullptr);
+}
+
+
+TEST_F(StaticHandlerTest, HandleRequestNonExistentFile) {
+
+    http::request<http::vector_body<char>> req;
+    req.method(http::verb::get);
+    req.target("/non-existent-file.txt");
+    req.version(11);
+
+    http::response<http::vector_body<char>> response = handler->handle_request(req);
+
+    EXPECT_EQ(response.result(), http::status::not_found);
+}
+
+// TEST_F(StaticHandlerTest, HandleRequestValidFile) {
+
+//     http::request<http::vector_body<char>> req;
+//     req.method(http::verb::get);
+//     req.target("/resources/text/oof.txt");
+//     req.version(11);
+
+//     http::response<http::vector_body<char>> response = handler.handle_request(req);
+
+//     EXPECT_EQ(response.result(), http::status::ok);
+
+//     // std::string response_body(response.body().begin(), response.body().end());
+//     // EXPECT_EQ(response_body, test_file_content);
+// }
+
+
+// TEST_F(StaticHandlerTest, FileFound) {
+//     std::string file_content = "Hello, World!";
+//     std::string file_path = create_temp_file(file_content);
+
+//     http::request<http::vector_body<char>> request{http::verb::get, file_path, 11};
+    
+//     http::response<http::vector_body<char>> response = handler->handle_request(request);
+
+//     EXPECT_EQ(response.result(), http::status::ok);
+//     EXPECT_EQ(response.body().size(), file_content.size());
+//     EXPECT_EQ(std::string(response.body().begin(), response.body().end()), file_content);
+//     EXPECT_EQ(response[http::field::content_type], "text/plain");
+//     EXPECT_EQ(response[http::field::content_length], std::to_string(file_content.size()));
+
+//     std::remove(file_path.c_str());
+// }
+
+
+
+TEST_F(StaticHandlerTest, UnsupportedFileType) {
+    //Setup
+    std::vector<std::string> echo_paths;
+    std::map<std::string, std::string> static_paths;
+    echo_paths.push_back("/echo1");
+    static_paths["/"] = "./";
+    ServerPaths sp;
+    sp.echo_ = echo_paths;
+    sp.static_ = static_paths;
+    ConfigInterpreter::setServerPaths(sp);
+
+
+    // Create a StaticHandler with a valid file path
+    StaticHandler handler;
+
+    boost::string_view target = "/resources/text/oof.xyz";
+
+    auto request = http::request<http::vector_body<char>>(http::verb::get, target, 11U);
+    
+    auto response = handler.handle_request(request);
+
+    EXPECT_EQ(response.result(), http::status::not_found);
 }
 
