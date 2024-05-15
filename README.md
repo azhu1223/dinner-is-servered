@@ -125,8 +125,20 @@ File logging can be disabled when running the server via the `--disable-file-log
 
 ## Development
 
-**TODO**
+To add a new request handler, it must inherit from and implement the interface defined by RequestHander in RequestHandler.h. The new handler must implement the pure virtual function *handle_request*. This function receives an *http::request\<http::vector_body<char>\>* and returns a *http::response\<http::vector_body<char>\>*, where *http* is the namespace *boost::beast::http*. 
 
+Next, A factory class must be defined that contains a *create* function that has no arguments and only returns a dynamically allocated instance of the new request handler. 
+
+A new enum that represents the new request type handled by this handler must be added to the enum RequestType in *request_dispatcher.h*. Then, a line must be added to _main.cc to register the new factory function with the Registry and associate the new enum that was created with its factory function. This should be done with the function *Registry::RegisterRequestHandler*, which takes in the enum defined previously, as well as the factory function defined above.
+
+Finally, *RequestDispatcher::getRequestType* must be modified to be able to detect the type of request a response target represents.
+
+An example of the above process is given with NotFoundHandler:
+The class and its factory class is declared in *not_found_handler.h* and their functions are defined in *not_found_handler.cc*. Its *RequestType* enum defined in *request_dispatcher.h* is called *None*. It's registered to the Registry in *_main.cc* with the line
+```
+Registry::RegisterRequestHandler(None, NotFoundHandlerFactory::create);
+```
+Finally, any request with a target that doesn't match any path provided in the config file provided to the server results in *None* being returned from *RequestDispatcher::getRequestType*, signifying that the NotFoundHandler should be dispatched. In addition, targets that match with a path designated for static file serving, but which also reference files that do not actually exist also result in *None* being returned.
 ## Test Development
 
 Adding to cmake **TODO**
