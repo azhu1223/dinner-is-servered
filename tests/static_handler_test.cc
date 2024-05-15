@@ -40,7 +40,6 @@ TEST_F(StaticHandlerTest, DeterminesContentType) {
 }
 
 TEST_F(StaticHandlerTest, RequestHandlerTest) {
-    //Setup
     std::vector<std::string> echo_paths;
     std::map<std::string, std::string> static_paths;
     echo_paths.push_back("/echo1");
@@ -51,7 +50,6 @@ TEST_F(StaticHandlerTest, RequestHandlerTest) {
     ConfigInterpreter::setServerPaths(sp);
 
 
-    // Create a StaticHandler with a valid file path
     StaticHandler handler;
 
     boost::string_view target = "/resources/text/oof.txt";
@@ -108,39 +106,6 @@ TEST_F(StaticHandlerTest, HandleRequestNonExistentFile) {
     EXPECT_EQ(response.result(), http::status::not_found);
 }
 
-// TEST_F(StaticHandlerTest, HandleRequestValidFile) {
-
-//     http::request<http::vector_body<char>> req;
-//     req.method(http::verb::get);
-//     req.target("/resources/text/oof.txt");
-//     req.version(11);
-
-//     http::response<http::vector_body<char>> response = handler.handle_request(req);
-
-//     EXPECT_EQ(response.result(), http::status::ok);
-
-//     // std::string response_body(response.body().begin(), response.body().end());
-//     // EXPECT_EQ(response_body, test_file_content);
-// }
-
-
-// TEST_F(StaticHandlerTest, FileFound) {
-//     std::string file_content = "Hello, World!";
-//     std::string file_path = create_temp_file(file_content);
-
-//     http::request<http::vector_body<char>> request{http::verb::get, file_path, 11};
-    
-//     http::response<http::vector_body<char>> response = handler->handle_request(request);
-
-//     EXPECT_EQ(response.result(), http::status::ok);
-//     EXPECT_EQ(response.body().size(), file_content.size());
-//     EXPECT_EQ(std::string(response.body().begin(), response.body().end()), file_content);
-//     EXPECT_EQ(response[http::field::content_type], "text/plain");
-//     EXPECT_EQ(response[http::field::content_length], std::to_string(file_content.size()));
-
-//     std::remove(file_path.c_str());
-// }
-
 
 
 TEST_F(StaticHandlerTest, UnsupportedFileType) {
@@ -154,8 +119,6 @@ TEST_F(StaticHandlerTest, UnsupportedFileType) {
     sp.static_ = static_paths;
     ConfigInterpreter::setServerPaths(sp);
 
-
-    // Create a StaticHandler with a valid file path
     StaticHandler handler;
 
     boost::string_view target = "/resources/text/oof.xyz";

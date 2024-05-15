@@ -110,7 +110,7 @@ Configuration files for the server are stored in the *confs* directory. The *sam
 
 ## File Serving
 
-File serving is available on the static paths specified in the configuration file supplied to the server upon starting. It is **highly reccomended** to place all resources to serve in the *resources* directory, so that they will be properly copied to the build directory. Moreover, since the server uses relative paths to specify static file paths, each *root* listed in the configutarion file should begin with `../resources/` in order to properly direct the server to the resources directory. From there you can append on to specify a more explicit path within the resources directory.
+File serving is available on the static paths specified in the configuration file supplied to the server upon starting. It is **highly recommended** to place all resources to serve in the *resources* directory, so that they will be properly copied to the build directory. Moreover, since the server uses relative paths to specify static file paths, each *root* listed in the configuration file should begin with `../resources/` in order to properly direct the server to the resources directory. From there you can append on to specify a more explicit path within the resources directory.
 
 ## Logging
 
@@ -145,13 +145,39 @@ Adding to cmake **TODO**
 
 ### Integration Tests
 
-In order to minimize the output of log files when running tests, it is reccomended that integration tests run the server with the `--disable-file-logging` flag. All logs from the server will still be available in the *LastTest.log* file located within the *Testing* directory. The command to start the server within integration tests should be:
+In order to minimize the output of log files when running tests, it is recommended that integration tests run the server with the `--disable-file-logging` flag. All logs from the server will still be available in the *LastTest.log* file located within the *Testing* directory. The command to start the server within integration tests should be:
 
 `server CONFIGURATION_FILE --disable-file-logging`
 
 ### Unit Tests
 
-**TODO**
+To run the unit tests, see **make test** above. This repository has approximately 71 unit tests for a variety of implementations, the overview of which is provided below - 
+
+(1) config_interpreter_test - 
+This code tests the behavior of the ConfigInterpreter class for handling server configuration files, including port parsing and server path extraction, ensuring correct defaults, error handling, and path validation.
+
+(2) config_parser_test - Tests the behavior NginxConfigParser class for parsing various Nginx configuration file scenarios, ensuring correct handling of configurations, comments, blocks, whitespace, nested structures, and error conditions.
+
+(3) echo_handler_test - 
+Tests the EchoHandler class, verifying its request handling functionality and the creation of an instance via the EchoHandlerFactory. The tests ensure that given the appropriate echo type request, the response, and it's properties (including status code, content type, content length, body) are correct. 
+
+(4) logger_test - 
+Barebones test for the initialize_logging function for Boost Logging, ensuring that it does not throw any exceptions during initialization when called with either true or false as an argument. Since this is an external library's functionality that this implementation borrows from, there wasn't much to test on. We basically assume it works. 
+
+(5) not_found_handler_test - 
+Tests the NotFoundHandler class, verifying that when invoked in case of a 404, it sends the appropriate response (in terms of content, status, and length). It also tests the NotFoundHandlerFactory to ensure it properly creates instances of NotFoundHandler.
+
+(6) registry_test - Tests Registry class, verifying the retrieval of different RequestHandler types that have been registered, including EchoHandler, StaticHandler, and NotFoundHandler, and checking the behavior for a particular handler type that hasn't been registered (dummy RequestType object), which in this case we called BogusType.
+
+(7) request_dispatcher_test - Tests RequestDispatcher, verifying the correct identification of request types and the retrieval of static file paths based on the given request targets. It also tests that when given a static/echo/404 request, the RequestDispatcher identifies the appropriate type of the request. 
+
+(8) server_test - Tests the constructor and start_accept method of the server class, ensuring that it returns true upon successful initiation of accepting connections. 
+
+(9) session_test - This code tests the session class, verifying all aspects of socket connection and management are properly controlled.It checks that session initializes correctly, manages its socket and communication operations properly, handles errors, and closes cleanly.
+
+(10) signal_handler_test - This code tests the sig_handler function from signal_handler, verifying that it correctly handles a SIGINT signal by setting up the signal handler and ensuring that the program terminates as expected when the signal is raised; not too much testing here since this functionality is essentially derived from an external library. 
+
+(11) static_handler_test - This code tests the StaticHandler class (for static type requests), ensuring correct content type determination, request handling for both existing and non-existent files, and creation via the factory. The tests cover scenarios for valid file requests, unsupported file types, and handler creation.
 
 ## Google Cloud
 
