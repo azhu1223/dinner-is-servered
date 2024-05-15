@@ -44,6 +44,7 @@ http::response<http::vector_body<char>> StaticHandler::handle_request(const http
     if (!file.is_open()) {
         BOOST_LOG_TRIVIAL(error) << "File not found";
         response = http::response<http::vector_body<char>>(http::status::not_found, 11U);
+        response.prepare_payload();
         return response;
     }
     
@@ -56,6 +57,13 @@ http::response<http::vector_body<char>> StaticHandler::handle_request(const http
     BOOST_LOG_TRIVIAL(info) << "Obtained file size of " << file_size;
 
     std::string response_content_type = this->get_response_content_type(file_path);
+
+    if (response_content_type.empty()) {
+        BOOST_LOG_TRIVIAL(error) << "Unsupported file type";
+        response = http::response<http::vector_body<char>>(http::status::not_found, 11U);   //Will also occur when trying to access a directory on a static serving path
+        response.prepare_payload();
+        return response;
+    }
 
     // Allocate buffer for file
     std::vector<char> res(file_size);
