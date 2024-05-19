@@ -50,6 +50,7 @@ ServerPaths ConfigInterpreter::server_paths_;
 void ConfigInterpreter::setServerPaths(NginxConfig &config){
     std::vector<std::string> echo_paths;
     std::map<std::string, std::string> static_paths_to_server_paths;
+    std::map<std::string, std::string> crud_paths_to_server_paths;
     std::set<std::string> used_locations;
 
 
@@ -91,6 +92,22 @@ void ConfigInterpreter::setServerPaths(NginxConfig &config){
                             }
                         }
                     }
+                    //Crud statements
+                    else if (location_type == "CrudHandler") {
+                        bool found_server_file = false;
+                        for (const auto& lv3statement : lv2Statement->child_block_->statements_) {
+                            //Find the server file location
+                            if (lv3statement->tokens_.at(0) == "data_path") {
+                                if (found_server_file) {
+                                    BOOST_LOG_TRIVIAL(fatal) << "Duplicate server file location";
+                                    throw std::runtime_error("Duplicate server file location");
+                                }
+                                BOOST_LOG_TRIVIAL(info) << "Adding crud path: " << location << " mapping to server location " << lv3statement->tokens_.at(1);
+                                crud_paths_to_server_paths[location] = lv3statement->tokens_.at(1);
+                                found_server_file = true;
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -99,6 +116,7 @@ void ConfigInterpreter::setServerPaths(NginxConfig &config){
     ServerPaths paths;
     paths.echo_ = echo_paths;
     paths.static_ = static_paths_to_server_paths;
+    paths.crud_ = crud_paths_to_server_paths;
 
 
     server_paths_ = paths;

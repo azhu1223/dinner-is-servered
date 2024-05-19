@@ -11,4 +11,7 @@ server {
   location /generalstatic StaticHandler {
     root ../resources;
   }
+  location /api CrudHandler {
+    data_path ../data;
+  }
 }

@@ -18,6 +18,9 @@ RequestType RequestDispatcher::getRequestType(const boost::beast::http::request<
     for (auto path : server_paths.echo_){
         BOOST_LOG_TRIVIAL(info) << path;
     }
+    for (auto path : server_paths.crud_){
+        BOOST_LOG_TRIVIAL(info) << path.first;
+    }
 
 
 
@@ -49,6 +52,15 @@ RequestType RequestDispatcher::getRequestType(const boost::beast::http::request<
             longest_size = path.length();
             longest_path = path;
             request_type = Static;
+        }
+    }
+    for (auto path_to_location : server_paths.crud_){
+        std::string path = path_to_location.first;
+
+        if(result.find(path) == 0 && path.length() > longest_size){
+            longest_size = path.length();
+            longest_path = path;
+            request_type = CRUD;
         }
     }
     for (auto path : server_paths.echo_){

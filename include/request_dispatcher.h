@@ -12,6 +12,7 @@ enum RequestType {
     Static,
     Echo,
     None,
+    CRUD,
     BogusType // Just for testing purposes, no functional relevance.
 };
 
