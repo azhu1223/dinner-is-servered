@@ -40,6 +40,23 @@ TEST_F(CrudFileManagerTest, WriteFileTest) {
     EXPECT_TRUE(file_opened);
 }
 
+TEST_F(CrudFileManagerTest, ReadFileTest) {
+    CrudPath path;
+    path.data_path = "../data";
+    path.entity_name = "ReadFileTest";
+    path.entity_id = "1"; 
+
+    std::string data = "read file test";
+    manager->writeObject(path, data);
+
+    std::string file_contents;
+    bool read_success = manager->readObject(path, file_contents);
+
+    std::string test_directory = "../data";
+    int deleted = std::filesystem::remove_all(test_directory);
+    EXPECT_EQ(file_contents, data);
+}
+
 TEST_F(CrudFileManagerTest, ExistsObjectTest) {
     CrudPath path;
     path.data_path = "../data";

@@ -5,21 +5,23 @@
 #include <string>
 #include <boost/log/trivial.hpp>
 
-// bool CrudFileManager::readObject(CrudPath path, std::string& json) {
-//   std::string file_path = path.data_path + "/" + path.entity_name + "/" + path.entity_id;
-//   std::ifstream file(file_path, std::ios::in | std::ios::binary); 
-//   if (!file.is_open()) {
-//     return false;
-//   }
+bool CrudFileManager::readObject(CrudPath path, std::string& json) {
+  std::string file_path = path.data_path + "/" + path.entity_name + "/" + path.entity_id;
+  std::ifstream file(file_path, std::ios::in | std::ios::binary); 
+  if (!file.is_open()) {
+    BOOST_LOG_TRIVIAL(info) << "unable to open file " << file_path;
+    return false;
+  }
   
-//   std::ostringstream os;
-//   os << file.rdbuf();
-//   std::string object = os.str();
-//   json = object;
+  std::ostringstream os;
+  os << file.rdbuf();
+  std::string object = os.str();
+  json = object;
 
-//   file.close();
-//   return true;
-// }
+  file.close();
+  BOOST_LOG_TRIVIAL(info) << "found read success: " << file_path;
+  return true;
+}
 
 bool CrudFileManager::writeObject(CrudPath path, std::string json) {
   std::string directory = path.data_path + "/" + path.entity_name;

@@ -12,12 +12,31 @@
 #include <unordered_map>
 namespace http = boost::beast::http;
 
+class FakeCrudFileManager : public CrudFileManager {
+  public:
+    virtual bool readObject(CrudPath path, std::string& json) override;
+    virtual bool writeObject(CrudPath path, std::string json) override;
+  private:
+    std::unordered_map<std::string,std::string> filesystem;
+};
 
+bool FakeCrudFileManager::readObject(CrudPath path, std::string& json) {
+  std::string file_path = path.entity_name + "/" + path.entity_id;
+  if (filesystem.find(file_path) == filesystem.end()) return false;
+  json = filesystem[file_path];
+  return true;
+}
+
+bool FakeCrudFileManager::writeObject(CrudPath path, std::string json) {
+  std::string file_path = path.entity_name + "/" + path.entity_id;
+  filesystem[file_path] = json;
+  return true;
+}
 
 class CrudHandlerTest : public ::testing::Test {
 protected:
     void SetUp() override {
-        handler = new CrudHandler(CrudFileManager());
+        handler = new CrudHandler(std::make_shared<FakeCrudFileManager>());
     }
 
     void TearDown() override {
@@ -46,12 +65,12 @@ TEST_F(CrudHandlerTest, PostRequestSuccessTest) {
     std::vector<char> post_body(string_body.begin(),string_body.end());
     http::request<http::vector_body<char>> req;
     req.method(http::verb::post);
-    req.target("/api/Books");
+    req.target("/api/PostRequestTest");
     req.version(11);
     req.body() = post_body;
     req.prepare_payload();
 
-    CrudFileManager manager;
+    std::shared_ptr<FakeCrudFileManager> manager = std::make_shared<FakeCrudFileManager>();
     CrudHandler handler(manager);
     http::response<http::vector_body<char>> response = handler.handle_request(req);
 
@@ -71,12 +90,12 @@ TEST_F(CrudHandlerTest, PostRequestFailTest) {
     std::vector<char> post_body(string_body.begin(),string_body.end());
     http::request<http::vector_body<char>> req;
     req.method(http::verb::post);
-    req.target("/api/Books/1");
+    req.target("/api/PostRequestTest/1");
     req.version(11);
     req.body() = post_body;
     req.prepare_payload();
 
-    CrudFileManager manager;
+    std::shared_ptr<FakeCrudFileManager> manager = std::make_shared<FakeCrudFileManager>();
     CrudHandler handler(manager);
     http::response<http::vector_body<char>> response = handler.handle_request(req);
 
@@ -108,7 +127,7 @@ TEST_F(CrudHandlerTest, PutRequestSuccessTest) {
     req.body() = post_body;
     req.prepare_payload();
 
-    CrudFileManager manager;
+     std::shared_ptr<CrudFileManager> manager = std::make_shared<CrudFileManager>();;
     CrudHandler handler(manager);
     http::response<http::vector_body<char>> response = handler.handle_request(req);
     EXPECT_EQ(response.result(), http::status::created);
@@ -159,7 +178,7 @@ TEST_F(CrudHandlerTest, PutRequestFailTest_NoObject) {
     req.body() = put_body;
     req.prepare_payload();
 
-    CrudFileManager manager;
+     std::shared_ptr<CrudFileManager> manager = std::make_shared<CrudFileManager>();
     CrudHandler handler(manager);
     http::response<http::vector_body<char>> response = handler.handle_request(req);
     EXPECT_EQ(response.result(), http::status::not_found);
@@ -188,10 +207,62 @@ TEST_F(CrudHandlerTest, PutRequestFailTest_EmptyId) {
     req.body() = put_body;
     req.prepare_payload();
 
-    CrudFileManager manager;
+    std::shared_ptr<CrudFileManager> manager = std::make_shared<CrudFileManager>();
     CrudHandler handler(manager);
     http::response<http::vector_body<char>> response = handler.handle_request(req);
     EXPECT_EQ(response.result(), http::status::bad_request);
+}
+
+TEST_F(CrudHandlerTest, GetRequestSuccessTest) {
+    std::map<std::string, std::string> crud_paths;
+    crud_paths["/api"] = "./data";
+    ServerPaths sp;
+    sp.crud_ = crud_paths;
+    ConfigInterpreter::setServerPaths(sp);
+
+    std::string string_body = "{ \"data\": \"1\"}";
+    std::vector<char> post_body(string_body.begin(),string_body.end());
+    http::request<http::vector_body<char>> post_request;
+    post_request.method(http::verb::post);
+    post_request.target("/api/GetRequestTest");
+    post_request.version(11);
+    post_request.body() = post_body;
+    post_request.prepare_payload();
+
+    std::shared_ptr<FakeCrudFileManager> manager = std::make_shared<FakeCrudFileManager>();
+    CrudHandler handler(manager);
+    handler.handle_request(post_request);
+
+    http::request<http::vector_body<char>> get_request;
+    get_request.method(http::verb::get);
+    get_request.target("/api/GetRequestTest/1");
+    get_request.version(11);
+    get_request.prepare_payload();
+
+    http::response<http::vector_body<char>> response = handler.handle_request(get_request);
+
+    EXPECT_EQ(response.result(), http::status::ok);
+}
+
+TEST_F(CrudHandlerTest, GetRequestFailNotFoundTest) {
+    std::map<std::string, std::string> crud_paths;
+    crud_paths["/api"] = "./data";
+    ServerPaths sp;
+    sp.crud_ = crud_paths;
+    ConfigInterpreter::setServerPaths(sp);
+
+    std::shared_ptr<FakeCrudFileManager> manager = std::make_shared<FakeCrudFileManager>();
+    CrudHandler handler(manager);
+
+    http::request<http::vector_body<char>> get_request;
+    get_request.method(http::verb::get);
+    get_request.target("/api/GetRequestTest/404");
+    get_request.version(11);
+    get_request.prepare_payload();
+
+    http::response<http::vector_body<char>> response = handler.handle_request(get_request);
+
+    EXPECT_EQ(response.result(), http::status::not_found);
 }
 
 TEST_F(CrudHandlerTest, Factory) {

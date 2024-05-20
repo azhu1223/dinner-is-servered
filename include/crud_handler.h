@@ -11,11 +11,14 @@ namespace http = boost::beast::http;
 
 class CrudHandler : public RequestHandler {
     public:
-        CrudHandler(CrudFileManager manager);
+        CrudHandler(std::shared_ptr<CrudFileManager> manager);
+        ~CrudHandler();
         virtual http::response<http::vector_body<char>> handle_request(const http::request<http::vector_body<char>>& req);
-        static std::string generateEntityID(std::unordered_set<std::string> used_ids);
     private:
-        CrudFileManager file_manager;
+        static std::string generateEntityID(std::unordered_set<std::string> used_ids);
+        http::response<http::vector_body<char>> handle_post(CrudPath path, const http::request<http::vector_body<char>>& req);
+        http::response<http::vector_body<char>> handle_get(CrudPath path, const http::request<http::vector_body<char>>& req);
+        std::shared_ptr<CrudFileManager> file_manager;
 };
 
 class CrudHandlerFactory{
