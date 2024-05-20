@@ -11,7 +11,9 @@ struct CrudPath {
 class CrudFileManager {
     public:
         // bool readObject(CrudPath file_path, std::string& json);
-        bool writeObject(CrudPath file_path, std::string json);
+        virtual bool writeObject(CrudPath file_path, std::string json);
+        bool existsObject(CrudPath file_path); 
+        virtual ~CrudFileManager() = default; 
 };
 
 #endif

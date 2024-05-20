@@ -45,3 +45,13 @@ bool CrudFileManager::writeObject(CrudPath path, std::string json) {
 
   return true;
 }
+
+bool CrudFileManager::existsObject(CrudPath path) {
+  std::string file_path = path.data_path + "/" + path.entity_name + "/" + path.entity_id;
+  
+  try {
+    return std::filesystem::exists(file_path);
+  } catch (const std::filesystem::filesystem_error& e) {
+    return false;
+  }
+}
