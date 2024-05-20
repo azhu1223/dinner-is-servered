@@ -5,6 +5,7 @@
 #include <boost/beast/http.hpp>
 #include <boost/log/trivial.hpp>
 #include <fstream>
+#include "crud_file_manager.h"
 
 RequestType RequestDispatcher::getRequestType(const boost::beast::http::request<boost::beast::http::vector_body<char>>& request){
     boost::beast::string_view target = request.target();
@@ -144,4 +145,78 @@ std::string RequestDispatcher::getStaticFilePath
                         + result.substr(result.find(longest_path) + longest_path.length());
     BOOST_LOG_TRIVIAL(info) << "Set file_path_ to " << file_path;
     return file_path;
+};
+
+CrudPath RequestDispatcher::getCrudEntityPath
+    (const boost::beast::http::request<boost::beast::http::vector_body<char>>& request){
+
+    boost::beast::string_view target = request.target();
+    ServerPaths server_paths = ConfigInterpreter::getServerPaths();
+
+    std::string result;
+    bool is_prev_slash = false;
+    RequestType request_type = None;
+
+    //Remove back to back slashes and trailing slashes
+    for (char c : target) {
+        if (c == '/' && is_prev_slash) {
+            continue;
+        }
+        result += c;
+        is_prev_slash = (c == '/');
+    }
+    while (result.back() == '/' && result.length() > 1) {
+        result.pop_back();
+    }
+
+    //Look for the closest matching path
+    int longest_size = 0;
+    std::string longest_path = "";
+    for (auto path_to_location : server_paths.static_){
+        std::string path = path_to_location.first;
+        if(result.find(path) == 0 && path.length() > longest_size){
+            longest_size = path.length();
+            longest_path = path;
+            request_type = Static;
+        }
+    }
+    for (auto path : server_paths.echo_){
+        if(result.find(path) == 0 && path.length() > longest_size){
+            longest_size = path.length();
+            longest_path = path;
+            request_type = Echo;
+        }
+    }
+    for (auto path_to_location : server_paths.crud_){
+        std::string path = path_to_location.first;
+        if(result.find(path) == 0 && path.length() > longest_size){
+            longest_size = path.length();
+            longest_path = path;
+            request_type = CRUD;
+        }
+    }
+
+    if (request_type != CRUD){
+        BOOST_LOG_TRIVIAL(error) << "getCrudEntityID was called for a non-CRUD request";
+        CrudPath empty;
+        return empty;
+    }
+
+    std::string entity_path = result.substr(result.find(longest_path) + longest_path.length());
+     
+    auto split_index = entity_path.find("/", 1);
+    std::string entity_name = entity_path.substr(1,split_index-1);
+    std::string entity_id = "";
+    if (split_index != std::string::npos) {
+      entity_id = entity_path.substr(split_index+1, entity_path.size());
+    }
+    BOOST_LOG_TRIVIAL(info) << "entity: " << entity_name;
+    BOOST_LOG_TRIVIAL(info) << "id: " << entity_id;
+
+    CrudPath crud_path;
+    crud_path.data_path = server_paths.crud_[longest_path];
+    crud_path.entity_name = entity_name;
+    crud_path.entity_id = entity_id;
+
+    return crud_path;
 };

@@ -5,6 +5,7 @@
 #include <boost/beast/http/parser.hpp>
 #include <boost/beast/http.hpp>
 #include <string>
+#include "crud_file_manager.h"
 
 namespace http = boost::beast::http;
 
@@ -21,6 +22,7 @@ class RequestDispatcher {
     public:
         static RequestType getRequestType(const boost::beast::http::request<boost::beast::http::vector_body<char>>& request);
         static std::string getStaticFilePath(const boost::beast::http::request<boost::beast::http::vector_body<char>>& request);
+        static CrudPath getCrudEntityPath(const boost::beast::http::request<boost::beast::http::vector_body<char>>& request);
 };
 
 #endif
