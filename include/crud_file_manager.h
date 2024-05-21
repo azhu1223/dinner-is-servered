@@ -12,7 +12,8 @@ class CrudFileManager {
     public:
         virtual bool readObject(CrudPath file_path, std::string& json);
         virtual bool writeObject(CrudPath file_path, std::string json);
-        bool existsObject(CrudPath file_path); 
+        virtual bool deleteObject(CrudPath file_path);
+        virtual bool existsObject(CrudPath file_path); 
         virtual ~CrudFileManager() = default; 
 };
 

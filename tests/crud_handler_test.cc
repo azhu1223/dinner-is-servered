@@ -168,7 +168,7 @@ TEST_F(CrudHandlerTest, PutRequestFailTest_NoObject) {
     sp.crud_ = crud_paths;
     ConfigInterpreter::setServerPaths(sp);
 
-    // Try to update an object that doesn't exist 
+    // Try to update an object that doesn't exist --> will create it!
     std::string string_body = "{ \"data\": \"1\"}";
     std::vector<char> put_body(string_body.begin(),string_body.end());
     http::request<http::vector_body<char>> req;
@@ -178,10 +178,10 @@ TEST_F(CrudHandlerTest, PutRequestFailTest_NoObject) {
     req.body() = put_body;
     req.prepare_payload();
 
-     std::shared_ptr<CrudFileManager> manager = std::make_shared<CrudFileManager>();
+    std::shared_ptr<CrudFileManager> manager = std::make_shared<CrudFileManager>();
     CrudHandler handler(manager);
     http::response<http::vector_body<char>> response = handler.handle_request(req);
-    EXPECT_EQ(response.result(), http::status::not_found);
+    EXPECT_EQ(response.result(), http::status::created);
 }
 
 TEST_F(CrudHandlerTest, PutRequestFailTest_EmptyId) {
@@ -212,6 +212,8 @@ TEST_F(CrudHandlerTest, PutRequestFailTest_EmptyId) {
     http::response<http::vector_body<char>> response = handler.handle_request(req);
     EXPECT_EQ(response.result(), http::status::bad_request);
 }
+
+// (3) GET Tests
 
 TEST_F(CrudHandlerTest, GetRequestSuccessTest) {
     std::map<std::string, std::string> crud_paths;
@@ -265,12 +267,128 @@ TEST_F(CrudHandlerTest, GetRequestFailNotFoundTest) {
     EXPECT_EQ(response.result(), http::status::not_found);
 }
 
+// (4) DELETE Tests
+TEST_F(CrudHandlerTest, DeleteRequestSuccessTest) {
+    std::vector<std::string> echo_paths;
+    std::map<std::string, std::string> static_paths;
+    std::map<std::string, std::string> crud_paths;
+    echo_paths.push_back("/echo1");
+    static_paths["/static"] = "./static";
+    crud_paths["/api"] = "./data";
+    ServerPaths sp;
+    sp.echo_ = echo_paths;
+    sp.static_ = static_paths;
+    sp.crud_ = crud_paths;
+    ConfigInterpreter::setServerPaths(sp);
+
+    // First, need to create an object so we can delete it 
+    std::string string_body = "{ \"data\": \"1\"}";
+    std::vector<char> post_body(string_body.begin(),string_body.end());
+    http::request<http::vector_body<char>> req;
+    req.method(http::verb::post);
+    req.target("/api/Books");
+    req.version(11);
+    req.body() = post_body;
+    req.prepare_payload();
+
+    std::shared_ptr<CrudFileManager> manager = std::make_shared<CrudFileManager>();;
+    CrudHandler handler(manager);
+    http::response<http::vector_body<char>> response = handler.handle_request(req);
+    EXPECT_EQ(response.result(), http::status::created);
+
+    // Now, let's delete this object 
+    http::request<http::vector_body<char>> del_req;
+
+    del_req.method(http::verb::delete_);
+    del_req.target("/api/Books/1");
+    del_req.version(11);
+    del_req.prepare_payload();
+
+    response = handler.handle_request(del_req);
+    EXPECT_EQ(response.result(), http::status::ok);
+
+    // Now, confirm if file deleted
+    EXPECT_FALSE(std::filesystem::exists("./data/Books/1"));
+
+    int deleted = std::filesystem::remove_all(crud_paths["/api"] );
+}
+
+TEST_F(CrudHandlerTest, DeleteRequestFailNoIDTest) {
+    std::vector<std::string> echo_paths;
+    std::map<std::string, std::string> static_paths;
+    std::map<std::string, std::string> crud_paths;
+    echo_paths.push_back("/echo1");
+    static_paths["/static"] = "./static";
+    crud_paths["/api"] = "./data";
+    ServerPaths sp;
+    sp.echo_ = echo_paths;
+    sp.static_ = static_paths;
+    sp.crud_ = crud_paths;
+    ConfigInterpreter::setServerPaths(sp);
+
+    // First, need to create an object so we can delete it 
+    std::string string_body = "{ \"data\": \"1\"}";
+    std::vector<char> post_body(string_body.begin(),string_body.end());
+    http::request<http::vector_body<char>> req;
+    req.method(http::verb::post);
+    req.target("/api/Books");
+    req.version(11);
+    req.body() = post_body;
+    req.prepare_payload();
+
+    std::shared_ptr<CrudFileManager> manager = std::make_shared<CrudFileManager>();;
+    CrudHandler handler(manager);
+    http::response<http::vector_body<char>> response = handler.handle_request(req);
+    EXPECT_EQ(response.result(), http::status::created);
+
+    // Now, let's delete this object 
+    req.method(http::verb::delete_);
+    req.target("/api/Books");
+    req.version(11);
+    req.prepare_payload();
+
+    response = handler.handle_request(req);
+    EXPECT_EQ(response.result(), http::status::bad_request);
+
+    int deleted = std::filesystem::remove_all(crud_paths["/api"] );
+}
+
+TEST_F(CrudHandlerTest, DeleteRequestFailNoFileTest) {
+    std::vector<std::string> echo_paths;
+    std::map<std::string, std::string> static_paths;
+    std::map<std::string, std::string> crud_paths;
+    echo_paths.push_back("/echo1");
+    static_paths["/static"] = "./static";
+    crud_paths["/api"] = "./data";
+    ServerPaths sp;
+    sp.echo_ = echo_paths;
+    sp.static_ = static_paths;
+    sp.crud_ = crud_paths;
+    ConfigInterpreter::setServerPaths(sp);
+
+    // Let's delete a non-existent object
+    http::request<http::vector_body<char>> req;
+    req.method(http::verb::delete_);
+    req.target("/api/Books/1");
+    req.version(11);
+    req.prepare_payload();
+
+    std::shared_ptr<CrudFileManager> manager = std::make_shared<CrudFileManager>();;
+    CrudHandler handler(manager);
+    http::response<http::vector_body<char>> response = handler.handle_request(req);
+    EXPECT_EQ(response.result(), http::status::no_content);
+
+    int deleted = std::filesystem::remove_all(crud_paths["/api"] );
+}
+
+
+
+// (3) Miscellaneous Tests 
+
 TEST_F(CrudHandlerTest, Factory) {
     auto factory_genereated_handler = CrudHandlerFactory::create();
     EXPECT_TRUE(factory_genereated_handler != nullptr);
 }
-
-// (3) Miscellaneous Tests 
 
 TEST_F(CrudHandlerTest, BadRequestMethodTest) {
     http::request<http::vector_body<char>> req;

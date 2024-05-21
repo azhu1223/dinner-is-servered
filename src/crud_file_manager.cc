@@ -48,6 +48,22 @@ bool CrudFileManager::writeObject(CrudPath path, std::string json) {
   return true;
 }
 
+bool CrudFileManager::deleteObject(CrudPath path) {
+  std::string file_path = path.data_path + "/" + path.entity_name + "/" + path.entity_id;
+  bool exists = existsObject(path); 
+
+  if (!exists) {
+    BOOST_LOG_TRIVIAL(info) << "file doesn't exist: " << file_path;
+    return false; // This object doesn't exist 
+  }
+
+  try {
+    return std::filesystem::remove(file_path);
+  } catch (const std::filesystem::filesystem_error& e) {
+    return false;
+  }
+}
+
 bool CrudFileManager::existsObject(CrudPath path) {
   std::string file_path = path.data_path + "/" + path.entity_name + "/" + path.entity_id;
   

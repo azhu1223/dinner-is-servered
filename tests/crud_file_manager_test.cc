@@ -90,3 +90,48 @@ TEST_F(CrudFileManagerTest, ExistsNoObjectTest) {
     bool exists = manager->existsObject(path); 
     EXPECT_FALSE(exists);
 }
+
+TEST_F(CrudFileManagerTest, DeleteObject) {
+    CrudPath path;
+    path.data_path = "../data";
+    path.entity_name = "DeleteObject";
+    path.entity_id = "1"; 
+
+    std::string data = "delete file test";
+    manager->writeObject(path, data);
+
+    // Created new file at file_path
+    std::string file_path = "../data/DeleteObjectTest/1";
+    std::ofstream file(file_path); 
+    bool file_opened = file.is_open();
+    file.close();
+
+    // Confirm that this file does exist 
+    bool exists = manager->existsObject(path); 
+    EXPECT_TRUE(exists);
+
+    // Delete newly created file 
+    bool deleted_file = manager->deleteObject(path); 
+    EXPECT_TRUE(deleted_file); 
+    EXPECT_FALSE(std::filesystem::exists(file_path));
+
+    std::string test_directory = "../data";
+    int deleted = std::filesystem::remove_all(test_directory);
+}
+
+TEST_F(CrudFileManagerTest, DeleteNonexistentObject) {
+    CrudPath path;
+    path.data_path = "../data";
+    path.entity_name = "DeleteObject";
+    path.entity_id = "1"; 
+
+    std::string file_path = "../data/DeleteObjectTest/1";
+
+    // Delete newly created file 
+    bool deleted_file = manager->deleteObject(path); 
+    EXPECT_FALSE(deleted_file); 
+    EXPECT_FALSE(std::filesystem::exists(file_path));
+
+    std::string test_directory = "../data";
+    int deleted = std::filesystem::remove_all(test_directory);
+}
