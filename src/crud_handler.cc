@@ -186,6 +186,16 @@ http::response<http::vector_body<char>> CrudHandler::handle_request(const http::
     http::response<http::vector_body<char>> response;
     CrudPath path = RequestDispatcher::getCrudEntityPath(req);
 
+    if (path.entity_name == "") {
+      BOOST_LOG_TRIVIAL(error) << "Invalid CRUD request. Missing Entity name";
+      std::string response_body_string = "400 Bad Request \r\n\r\n";
+      std::vector<char> response_body_vector(response_body_string.begin(), response_body_string.end());
+      response = http::response<http::vector_body<char>>(http::status::bad_request, 11U, response_body_vector);
+      response.set(http::field::content_type, "text/plain");
+      response.set(http::field::content_length, std::to_string(response_body_vector.size()));
+      response.prepare_payload();
+      return response;
+    }
     if (req.method() == http::verb::post) {
       return handle_post(path, req);
     } else if (req.method() == http::verb::get) {

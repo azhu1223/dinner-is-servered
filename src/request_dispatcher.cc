@@ -205,10 +205,13 @@ CrudPath RequestDispatcher::getCrudEntityPath
     std::string entity_path = result.substr(result.find(longest_path) + longest_path.length());
      
     auto split_index = entity_path.find("/", 1);
-    std::string entity_name = entity_path.substr(1,split_index-1);
+    std::string entity_name = "";
     std::string entity_id = "";
     if (split_index != std::string::npos) {
+      entity_name = entity_path.substr(1,split_index-1);
       entity_id = entity_path.substr(split_index+1, entity_path.size());
+    } else if (entity_path.size() > 1) {
+      entity_name = entity_path.substr(1);
     }
     BOOST_LOG_TRIVIAL(info) << "entity: " << entity_name;
     BOOST_LOG_TRIVIAL(info) << "id: " << entity_id;
