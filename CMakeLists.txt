@@ -256,6 +256,11 @@ if (NOT CMAKE_BUILD_TYPE STREQUAL Coverage)
     add_test(NAME IntegrationTests.multiple_end_brackets COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/tests/integration_tests/integration_test_multiple_end_brackets.py ${CMAKE_CURRENT_BINARY_DIR}/bin/server WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tests/integration_tests/)
     add_test(NAME IntegrationTests.request_valid_file COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/tests/integration_tests/integration_test_requested_file_success.py ${CMAKE_CURRENT_BINARY_DIR}/bin/server WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tests/integration_tests/)
     add_test(NAME IntegrationTests.request_invalid_file COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/tests/integration_tests/integration_test_requested_file_fail.py ${CMAKE_CURRENT_BINARY_DIR}/bin/server WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tests/integration_tests/)
+    add_test(NAME IntegrationTests.crud_post COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/tests/integration_tests/integration_test_crud_post.py ${CMAKE_CURRENT_BINARY_DIR}/bin/server WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tests/integration_tests/)
+    add_test(NAME IntegrationTests.crud_get COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/tests/integration_tests/integration_test_crud_get.py ${CMAKE_CURRENT_BINARY_DIR}/bin/server WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tests/integration_tests/)
+    add_test(NAME IntegrationTests.crud_put COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/tests/integration_tests/integration_test_crud_put.py ${CMAKE_CURRENT_BINARY_DIR}/bin/server WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tests/integration_tests/)
+    add_test(NAME IntegrationTests.crud_delete COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/tests/integration_tests/integration_test_crud_delete.py ${CMAKE_CURRENT_BINARY_DIR}/bin/server WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tests/integration_tests/)
+    add_test(NAME IntegrationTests.crud_list COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/tests/integration_tests/integration_test_crud_list.py ${CMAKE_CURRENT_BINARY_DIR}/bin/server WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tests/integration_tests/)
 endif()
 
 #Discover tests
