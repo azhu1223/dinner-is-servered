@@ -268,6 +268,7 @@ TEST_F(CrudHandlerTest, GetRequestFailNotFoundTest) {
 }
 
 // (4) DELETE Tests
+
 TEST_F(CrudHandlerTest, DeleteRequestSuccessTest) {
     std::vector<std::string> echo_paths;
     std::map<std::string, std::string> static_paths;
@@ -381,9 +382,144 @@ TEST_F(CrudHandlerTest, DeleteRequestFailNoFileTest) {
     int deleted = std::filesystem::remove_all(crud_paths["/api"] );
 }
 
+// (5) LIST Tests
 
+TEST_F(CrudHandlerTest, ListRequestPassNoFilesTest) {
+    std::vector<std::string> echo_paths;
+    std::map<std::string, std::string> static_paths;
+    std::map<std::string, std::string> crud_paths;
+    echo_paths.push_back("/echo1");
+    static_paths["/static"] = "./static";
+    crud_paths["/api"] = "./data";
+    ServerPaths sp;
+    sp.echo_ = echo_paths;
+    sp.static_ = static_paths;
+    sp.crud_ = crud_paths;
+    ConfigInterpreter::setServerPaths(sp);
 
-// (3) Miscellaneous Tests 
+    std::string string_body = "";
+    std::vector<char> list_body(string_body.begin(),string_body.end());
+    http::request<http::vector_body<char>> list_request;
+    list_request.method(http::verb::get);
+    list_request.target("/api/ListRequestTest");
+    list_request.version(11);
+    list_request.body() = list_body;
+    list_request.prepare_payload();
+
+    std::shared_ptr<CrudFileManager> manager = std::make_shared<CrudFileManager>();;
+    CrudHandler handler(manager);
+    http::response<http::vector_body<char>> response = handler.handle_request(list_request);
+    EXPECT_EQ(response.result(), http::status::ok);
+
+    std::string response_str(response.body().data(), response.body().size()); 
+    EXPECT_EQ(response_str, "[]"); 
+
+    int deleted = std::filesystem::remove_all(crud_paths["/api"] );
+}
+
+TEST_F(CrudHandlerTest, ListRequestPassOneFileTest) {
+    std::vector<std::string> echo_paths;
+    std::map<std::string, std::string> static_paths;
+    std::map<std::string, std::string> crud_paths;
+    echo_paths.push_back("/echo1");
+    static_paths["/static"] = "./static";
+    crud_paths["/api"] = "./data";
+    ServerPaths sp;
+    sp.echo_ = echo_paths;
+    sp.static_ = static_paths;
+    sp.crud_ = crud_paths;
+    ConfigInterpreter::setServerPaths(sp);
+
+    // First, need to create an object so we can update it (should have ID 1)
+    std::string string_body = "{ \"data\": \"1\"}";
+    std::vector<char> post_body(string_body.begin(),string_body.end());
+    http::request<http::vector_body<char>> req;
+    req.method(http::verb::post);
+    req.target("/api/ListRequestTest");
+    req.version(11);
+    req.body() = post_body;
+    req.prepare_payload();
+
+     std::shared_ptr<CrudFileManager> manager = std::make_shared<CrudFileManager>();;
+    CrudHandler handler(manager);
+    http::response<http::vector_body<char>> response = handler.handle_request(req);
+    EXPECT_EQ(response.result(), http::status::created);
+
+    // Call the list GET request
+    string_body = "";
+    std::vector<char> list_body(string_body.begin(),string_body.end());
+    http::request<http::vector_body<char>> list_request;
+    list_request.method(http::verb::get);
+    list_request.target("/api/ListRequestTest");
+    list_request.version(11);
+    list_request.body() = list_body;
+    list_request.prepare_payload();
+
+    response = handler.handle_request(list_request);
+    EXPECT_EQ(response.result(), http::status::ok);
+
+    std::string response_str(response.body().data(), response.body().size()); 
+    EXPECT_EQ(response_str, "[1]"); 
+
+    int deleted = std::filesystem::remove_all(crud_paths["/api"] );
+}
+
+TEST_F(CrudHandlerTest, ListRequestPassMultipleFilesTest) {
+    std::vector<std::string> echo_paths;
+    std::map<std::string, std::string> static_paths;
+    std::map<std::string, std::string> crud_paths;
+    echo_paths.push_back("/echo1");
+    static_paths["/static"] = "./static";
+    crud_paths["/api"] = "./data";
+    ServerPaths sp;
+    sp.echo_ = echo_paths;
+    sp.static_ = static_paths;
+    sp.crud_ = crud_paths;
+    ConfigInterpreter::setServerPaths(sp);
+
+    // First, need to create an object so we can update it (should have ID 1)
+    std::string string_body = "{ \"data\": \"1\"}";
+    std::vector<char> post_body(string_body.begin(),string_body.end());
+    http::request<http::vector_body<char>> req;
+    req.method(http::verb::post);
+    req.target("/api/ListRequestTest");
+    req.version(11);
+    req.body() = post_body;
+    req.prepare_payload();
+
+    std::shared_ptr<CrudFileManager> manager = std::make_shared<CrudFileManager>();;
+    CrudHandler handler(manager);
+    http::response<http::vector_body<char>> response = handler.handle_request(req);
+    EXPECT_EQ(response.result(), http::status::created);
+
+    // Create another object (should have ID 2)
+    response = handler.handle_request(req);
+    EXPECT_EQ(response.result(), http::status::created);
+
+    // Create another object (should have ID 3)
+    response = handler.handle_request(req);
+    EXPECT_EQ(response.result(), http::status::created);
+
+    // Call the list GET request
+    string_body = "";
+    std::vector<char> list_body(string_body.begin(),string_body.end());
+    http::request<http::vector_body<char>> list_request;
+    list_request.method(http::verb::get);
+    list_request.target("/api/ListRequestTest");
+    list_request.version(11);
+    list_request.body() = list_body;
+    list_request.prepare_payload();
+
+    response = handler.handle_request(list_request);
+    EXPECT_EQ(response.result(), http::status::ok);
+
+    std::string response_str(response.body().data(), response.body().size()); 
+    EXPECT_EQ(response_str, "[1, 2, 3]"); 
+
+    int deleted = std::filesystem::remove_all(crud_paths["/api"] );
+}
+
+// (6) Miscellaneous Tests 
 
 TEST_F(CrudHandlerTest, Factory) {
     auto factory_genereated_handler = CrudHandlerFactory::create();

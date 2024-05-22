@@ -15,11 +15,6 @@ CrudHandler::CrudHandler(std::shared_ptr<CrudFileManager> manager) : RequestHand
 CrudHandler::~CrudHandler() {
 }
 
-std::string CrudHandler::generateEntityID(std::unordered_set<std::string> used_ids) {
-  // TODO: add implementation, locking for thread safety
-  return "1";
-}
-
 http::response<http::vector_body<char>> CrudHandler::handle_post(CrudPath path, const http::request<http::vector_body<char>>& req) {
   http::response<http::vector_body<char>> response;
   if (path.entity_id != "") {
@@ -34,9 +29,8 @@ http::response<http::vector_body<char>> CrudHandler::handle_post(CrudPath path, 
   }
 
   // (1) generate unique id for the Entity
-  std::unordered_set<std::string> used_ids;
-  std::string new_id = CrudHandler::generateEntityID(used_ids);
-  path.entity_id = new_id;
+  std::string new_id = file_manager->generateEntityId(path);
+  path.entity_id = std::to_string(std::stoull(new_id));
 
   // (2) get the data in POST body
   std::vector<char> req_body(req.body());
@@ -56,17 +50,48 @@ http::response<http::vector_body<char>> CrudHandler::handle_post(CrudPath path, 
   return response;
 }
 
-http::response<http::vector_body<char>> CrudHandler::handle_get(CrudPath path, const http::request<http::vector_body<char>>& req) {
+http::response<http::vector_body<char>> CrudHandler::handle_list(CrudPath path, const http::request<http::vector_body<char>>& req) {
   http::response<http::vector_body<char>> response;
-  if (path.entity_id == "") {
-    // TODO: implement List Request
-    std::string response_body_string = "501 Not Implemented \r\n\r\n";
+  // (1) Check if entity_name is present 
+  if (path.entity_name == "") {
+    BOOST_LOG_TRIVIAL(error) << "Invalid CRUD GET request. Request must contain Entity Name";
+    std::string response_body_string = "400 Bad Request \r\n\r\n";
     std::vector<char> response_body_vector(response_body_string.begin(), response_body_string.end());
-    response = http::response<http::vector_body<char>>(http::status::not_implemented, 11U, response_body_vector);
+    response = http::response<http::vector_body<char>>(http::status::bad_request, 11U, response_body_vector);
     response.set(http::field::content_type, "text/plain");
     response.set(http::field::content_length, std::to_string(response_body_vector.size()));
     response.prepare_payload();
     return response;
+  }
+
+  // (2) Look at files in path.data_path + "/" + path.entity_name and 
+  std::vector<std::string> file_names_list = file_manager->listObjects(path); 
+
+  // (3) Turn vector into string of list of file names (ex. [1, 2, 3])
+  std::ostringstream oss;
+  oss << "[";
+  for (size_t i = 0; i < file_names_list.size(); ++i) {
+      oss << file_names_list[i];
+      if (i < file_names_list.size() - 1) {
+          oss << ", ";
+      }
+  }
+  oss << "]";
+  std::string file_contents = oss.str();
+
+  // (4) Send ok response with file_contents payload 
+  std::vector<char> response_body_vector(file_contents.begin(), file_contents.end());
+  response = http::response<http::vector_body<char>>(http::status::ok, 11U, response_body_vector);
+  response.set(http::field::content_type, "application/json");
+  response.set(http::field::content_length, std::to_string(response_body_vector.size()));
+  response.prepare_payload();
+  return response; 
+}
+
+http::response<http::vector_body<char>> CrudHandler::handle_get(CrudPath path, const http::request<http::vector_body<char>>& req) {
+  http::response<http::vector_body<char>> response;
+  if (path.entity_id == "") {
+    return handle_list(path, req); 
   }
 
   // (1) read file with (Entity, id) from filesystem
