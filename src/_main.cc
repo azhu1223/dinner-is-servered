@@ -10,6 +10,7 @@
 #include "static_handler.h"
 #include "not_found_handler.h"
 #include "crud_handler.h"
+#include "health_handler.h"
 
 
 int main(int argc, char* argv[]) {
@@ -35,6 +36,8 @@ int main(int argc, char* argv[]) {
         Registry::RegisterRequestHandler(Static, StaticHandlerFactory::create);
         Registry::RegisterRequestHandler(None, NotFoundHandlerFactory::create);
         Registry::RegisterRequestHandler(CRUD, CrudHandlerFactory::create);
+        Registry::RegisterRequestHandler(Health, HealthHandlerFactory::create);
+
         
         boost::asio::io_service io_service;
 

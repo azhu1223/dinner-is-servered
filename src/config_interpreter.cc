@@ -52,6 +52,8 @@ void ConfigInterpreter::setServerPaths(NginxConfig &config){
     std::map<std::string, std::string> static_paths_to_server_paths;
     std::map<std::string, std::string> crud_paths_to_server_paths;
     std::set<std::string> used_locations;
+    std::vector<std::string> health_paths;
+
 
 
     for (const auto& statement : config.statements_) {
@@ -108,6 +110,11 @@ void ConfigInterpreter::setServerPaths(NginxConfig &config){
                             }
                         }
                     }
+                    //Health Handler
+                    else if (location_type == "HealthHandler") {
+                        BOOST_LOG_TRIVIAL(info) << "Adding health path: " << location;
+                        health_paths.push_back(location);
+                    }
                 }
             }
         }
@@ -117,6 +124,8 @@ void ConfigInterpreter::setServerPaths(NginxConfig &config){
     paths.echo_ = echo_paths;
     paths.static_ = static_paths_to_server_paths;
     paths.crud_ = crud_paths_to_server_paths;
+    paths.health_ = health_paths;
+
 
 
     server_paths_ = paths;

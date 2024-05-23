@@ -14,6 +14,7 @@ enum RequestType {
     Echo,
     None,
     CRUD,
+    Health,
     BogusType // Just for testing purposes, no functional relevance.
 };
 

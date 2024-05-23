@@ -68,6 +68,9 @@ add_library(crud_file_manager_lib src/crud_file_manager.cc)
 add_library(request_dispatcher_lib src/request_dispatcher.cc)
 add_library(not_found_handler_lib src/not_found_handler.cc)
 add_library(registry_lib src/registry.cc)
+add_library(health_handler_lib src/health_handler.cc)
+
+
 
 target_link_libraries(logger_lib
                     Boost::system 
@@ -133,6 +136,13 @@ target_link_libraries(echo_handler_lib
                     Boost::log
                     )
 
+target_link_libraries(health_handler_lib
+                    request_handler_lib
+                    Boost::system 
+                    Boost::log_setup 
+                    Boost::log
+                    )
+
 target_link_libraries(request_handler_lib
                     config_interpreter_lib
                     Boost::system 
@@ -153,6 +163,7 @@ target_link_libraries(session_lib
                     request_handler_lib
                     echo_handler_lib
                     static_handler_lib
+                    health_handler_lib
                     crud_handler_lib
                     not_found_handler_lib
                     request_dispatcher_lib
@@ -206,6 +217,9 @@ target_link_libraries(server_test server_lib gtest_main)
 
 add_executable(not_found_handler_test tests/not_found_handler_test.cc)
 target_link_libraries(not_found_handler_test not_found_handler_lib gtest_main)
+
+add_executable(health_handler_test tests/health_handler_test.cc)
+target_link_libraries(health_handler_test health_handler_lib gtest_main)
 
 add_executable(session_test tests/session_test.cc)
 target_link_libraries(session_test session_lib request_dispatcher_lib request_handler_lib not_found_handler_lib echo_handler_lib static_handler_lib logger_lib Boost::log_setup Boost::log gtest_main)
@@ -261,6 +275,7 @@ if (NOT CMAKE_BUILD_TYPE STREQUAL Coverage)
     add_test(NAME IntegrationTests.crud_put COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/tests/integration_tests/integration_test_crud_put.py ${CMAKE_CURRENT_BINARY_DIR}/bin/server WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tests/integration_tests/)
     add_test(NAME IntegrationTests.crud_delete COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/tests/integration_tests/integration_test_crud_delete.py ${CMAKE_CURRENT_BINARY_DIR}/bin/server WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tests/integration_tests/)
     add_test(NAME IntegrationTests.crud_list COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/tests/integration_tests/integration_test_crud_list.py ${CMAKE_CURRENT_BINARY_DIR}/bin/server WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tests/integration_tests/)
+    add_test(NAME IntegrationTests.health COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/tests/integration_tests/integration_test_health.py ${CMAKE_CURRENT_BINARY_DIR}/bin/server WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tests/integration_tests/)
 endif()
 
 #Discover tests
@@ -272,7 +287,7 @@ gtest_discover_tests(session_test WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/
 gtest_discover_tests(signal_handler_test WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tests)
 gtest_discover_tests(logger_test WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tests)
 gtest_discover_tests(request_dispatcher_test WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tests)
-
+gtest_discover_tests(health_handler_test WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tests)
 gtest_discover_tests(static_handler_test WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tests)
 gtest_discover_tests(crud_handler_test WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tests)
 gtest_discover_tests(crud_file_manager_test WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tests)
@@ -284,4 +299,34 @@ gtest_discover_tests(server_test WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/t
 
 # Generate Coverage Report
 include(cmake/CodeCoverageReportConfig.cmake)
-generate_coverage_report(TARGETS server_lib signal_handler_lib logger_lib session_lib config_parser_lib config_interpreter_lib request_handler_lib request_dispatcher_lib echo_handler_lib not_found_handler_lib static_handler_lib crud_handler_lib registry_lib TESTS config_parser_test config_interpreter_test not_found_handler_test echo_handler_test session_test server_test signal_handler_test logger_test request_dispatcher_test static_handler_test crud_handler_test crud_file_manager_test registry_test)
+generate_coverage_report(TARGETS 
+                            server_lib 
+                            signal_handler_lib 
+                            logger_lib 
+                            session_lib 
+                            config_parser_lib 
+                            config_interpreter_lib 
+                            request_handler_lib 
+                            request_dispatcher_lib 
+                            echo_handler_lib 
+                            health_handler_lib 
+                            not_found_handler_lib 
+                            static_handler_lib 
+                            crud_handler_lib 
+                            crud_file_manager_lib
+                            registry_lib 
+                        TESTS 
+                            config_parser_test
+                            config_interpreter_test
+                            not_found_handler_test 
+                            echo_handler_test 
+                            session_test 
+                            server_test 
+                            signal_handler_test 
+                            logger_test 
+                            health_handler_test
+                            request_dispatcher_test 
+                            static_handler_test 
+                            crud_handler_test 
+                            crud_file_manager_test 
+                            registry_test)

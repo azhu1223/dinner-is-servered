@@ -71,6 +71,13 @@ RequestType RequestDispatcher::getRequestType(const boost::beast::http::request<
             request_type = Echo;
         }
     }
+    for (auto path : server_paths.health_){
+        if(result.find(path) == 0 && path.length() > longest_size){
+            longest_size = path.length();
+            longest_path = path;
+            request_type = Health;
+        }
+    }
 
     if (request_type == None){
         BOOST_LOG_TRIVIAL(error) << "There was no matching path found for the request. 404 Handler should be invoked";
