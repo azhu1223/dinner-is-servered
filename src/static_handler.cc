@@ -37,6 +37,19 @@ std::string StaticHandler::get_response_content_type(const std::string& file_pat
 
 http::response<http::vector_body<char>> StaticHandler::handle_request(const http::request<http::vector_body<char>>& req) {
     http::response<http::vector_body<char>> response;
+    //Check that request is a GET
+    if (req.method() != boost::beast::http::verb::get){
+        BOOST_LOG_TRIVIAL(error) << "Invalid HTTP method, expected GET";
+        std::string response_body_string = "Invalid HTTP method, expected GET\r\n\r\n";
+        std::vector<char> body(response_body_string.begin(), response_body_string.end());
+        response.set(http::field::content_type, "text/plain");
+        response.set(http::field::content_length, std::to_string(body.size()));
+        response = http::response<http::vector_body<char>>(http::status::bad_request, 11U, body);
+        response.prepare_payload();
+        return response;
+    }
+
+
     std::string file_path = RequestDispatcher::getStaticFilePath(req);
 
     std::ifstream file(file_path, std::ios::in | std::ios::binary);

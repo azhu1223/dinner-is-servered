@@ -6,6 +6,12 @@
 #include <boost/log/trivial.hpp>
 #include <fstream>
 #include "crud_file_manager.h"
+#include "request_handler.h"
+#include "not_found_handler.h"
+#include "echo_handler.h"
+#include "static_handler.h"
+#include "registry.h"
+
 
 RequestType RequestDispatcher::getRequestType(const boost::beast::http::request<boost::beast::http::vector_body<char>>& request){
     boost::beast::string_view target = request.target();
@@ -101,7 +107,7 @@ RequestType RequestDispatcher::getRequestType(const boost::beast::http::request<
     }
 
 
-    BOOST_LOG_TRIVIAL(info) << "Request is of type " << request_type;
+    BOOST_LOG_TRIVIAL(info) << "Request is of type " << RequestDispatcher::request_type_tostr(request_type);
     return request_type;
 }
 
@@ -237,3 +243,60 @@ CrudPath RequestDispatcher::getCrudEntityPath
 
     return crud_path;
 };
+
+std::string RequestDispatcher::request_type_tostr(RequestType request_type){
+    switch (request_type) {
+        case Static:
+            return "Static";
+        case Echo:
+            return "Echo";
+        case CRUD:
+            return "CRUD";
+        case Health:
+            return "Health";
+        case Sleep:
+            return "Sleep";
+        case None:
+            return "None";
+        case BogusType:
+            return "BogusType";
+        default:
+            return "Unknown";
+    }
+}
+
+
+http::response<http::vector_body<char>> RequestDispatcher::dispatch_request(const boost::beast::http::request<boost::beast::http::vector_body<char>>& request, const boost::asio::ip::tcp::socket& socket){
+
+        //Determine the request type and get request object
+        RequestType request_type = RequestDispatcher::getRequestType(request);
+        boost::system::error_code ec;
+
+        BOOST_LOG_TRIVIAL(info) << "Request from " << socket.remote_endpoint(ec).address() 
+            << " for target " << request.target();
+        if (ec){
+            BOOST_LOG_TRIVIAL(error) << "handle_read: Transport endpoint is not connected";
+        }
+
+        http::response<http::vector_body<char>> response;
+        //Check for empty request or unknown method
+        if (request.target().empty() || request.method() == boost::beast::http::verb::unknown){
+            BOOST_LOG_TRIVIAL(error) << "Empty request or unknown method";
+            std::vector<char> body;
+            response = http::response<http::vector_body<char>>(http::status::bad_request, 11U, body);
+            response.prepare_payload();
+        }
+        //Otherwise, dispatch request to appropriate handler
+        else{
+            RequestHandler* rh =  Registry::GetRequestHandler(request_type);
+            response = rh->handle_request(request);
+        }
+
+        BOOST_LOG_TRIVIAL(info) << "[ResponseMetrics]" << "\t" 
+                                << "Request IP: " << socket.remote_endpoint(ec).address()  << "\t"
+                                << "Request Target: " << request.target() << "\t"
+                                << "Response Code: " << response.result() << "\t"
+                                << "Response Handler: " << RequestDispatcher::request_type_tostr(request_type);
+
+        return response;
+}

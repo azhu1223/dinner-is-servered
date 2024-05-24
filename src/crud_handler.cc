@@ -211,9 +211,11 @@ http::response<http::vector_body<char>> CrudHandler::handle_request(const http::
     http::response<http::vector_body<char>> response;
     CrudPath path = RequestDispatcher::getCrudEntityPath(req);
 
-    if (path.entity_name == "") {
-      BOOST_LOG_TRIVIAL(error) << "Invalid CRUD request. Missing Entity name";
-      std::string response_body_string = "400 Bad Request \r\n\r\n";
+
+    //Ensure that the method is GET, POST, PUT, or DELETE
+    if (req.method() != http::verb::get && req.method() != http::verb::post && req.method() != http::verb::put && req.method() != http::verb::delete_) {
+      BOOST_LOG_TRIVIAL(error) << "Invalid CRUD request method. Must be one of POST/GET/PUT/DELETE";
+      std::string response_body_string = "400 Bad Request\r\nRequest method must be one of POST/GET/PUT/DELETE \r\n\r\n";
       std::vector<char> response_body_vector(response_body_string.begin(), response_body_string.end());
       response = http::response<http::vector_body<char>>(http::status::bad_request, 11U, response_body_vector);
       response.set(http::field::content_type, "text/plain");
@@ -221,17 +223,10 @@ http::response<http::vector_body<char>> CrudHandler::handle_request(const http::
       response.prepare_payload();
       return response;
     }
-    if (req.method() == http::verb::post) {
-      return handle_post(path, req);
-    } else if (req.method() == http::verb::get) {
-      return handle_get(path, req);
-    } else if (req.method() == http::verb::put) {
-      return handle_put(path, req);
-    } else if (req.method() == http::verb::delete_) {
-      return handle_del(path, req);
-    } else {
-      BOOST_LOG_TRIVIAL(error) << "Invalid CRUD request method. Must be one of POST/GET/PUT/DELETE";
-      std::string response_body_string = "400 Bad Request \r\n\r\n";
+    //Otherwise, ensure that an entity is present
+    else if (path.entity_name == "") {
+      BOOST_LOG_TRIVIAL(error) << "Invalid CRUD request. Missing Entity name";
+      std::string response_body_string = "400 Bad Request\r\nRequest must contain Entity name \r\n\r\n";
       std::vector<char> response_body_vector(response_body_string.begin(), response_body_string.end());
       response = http::response<http::vector_body<char>>(http::status::bad_request, 11U, response_body_vector);
       response.set(http::field::content_type, "text/plain");
@@ -240,13 +235,23 @@ http::response<http::vector_body<char>> CrudHandler::handle_request(const http::
       return response;
     }
 
-    std::string response_body_string = "501 Not Implemented \r\n\r\n";
-    std::vector<char> response_body_vector(response_body_string.begin(), response_body_string.end());
-    response = http::response<http::vector_body<char>>(http::status::not_implemented, 11U, response_body_vector);
-    response.set(http::field::content_type, "text/plain");
-    response.set(http::field::content_length, std::to_string(response_body_vector.size()));
-    response.prepare_payload();
-    return response;
+    //Dispatch the appropriate method to the appropriate handler
+    if (req.method() == http::verb::post) {
+      return handle_post(path, req);
+    } else if (req.method() == http::verb::get) {
+      return handle_get(path, req);
+    } else if (req.method() == http::verb::put) {
+      return handle_put(path, req);
+    } else if (req.method() == http::verb::delete_) {
+      return handle_del(path, req);
+    }
+
+
+      BOOST_LOG_TRIVIAL(error) << "Should never reach here. All cases should be handled above";
+      std::vector<char> response_body_vector;;
+      response = http::response<http::vector_body<char>>(http::status::bad_request, 11U, response_body_vector);
+      response.prepare_payload();
+      return response;
 }
 
 RequestHandler* CrudHandlerFactory::create() {

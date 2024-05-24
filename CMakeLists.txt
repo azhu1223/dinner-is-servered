@@ -160,21 +160,21 @@ target_link_libraries(request_handler_lib
 
 target_link_libraries(request_dispatcher_lib
                     config_interpreter_lib
-                    Boost::system 
-                    Boost::log_setup 
-                    Boost::log
-                    )
-
-target_link_libraries(session_lib 
                     registry_lib
-                    config_interpreter_lib
-                    request_handler_lib
                     echo_handler_lib
                     static_handler_lib
                     health_handler_lib
                     sleep_handler_lib
                     crud_handler_lib
                     not_found_handler_lib
+                    Boost::system 
+                    Boost::log_setup 
+                    Boost::log
+                    )
+
+target_link_libraries(session_lib 
+                    config_interpreter_lib
+                    request_handler_lib
                     request_dispatcher_lib
                     Boost::system 
                     Boost::log_setup 
