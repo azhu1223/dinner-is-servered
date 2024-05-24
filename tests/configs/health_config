@@ -2,4 +2,6 @@ server {
   listen   80;
   location /health HealthHandler {
   }
+  location /sleep SleepHandler {
+  }
 }

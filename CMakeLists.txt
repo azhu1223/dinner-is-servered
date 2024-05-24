@@ -69,6 +69,7 @@ add_library(request_dispatcher_lib src/request_dispatcher.cc)
 add_library(not_found_handler_lib src/not_found_handler.cc)
 add_library(registry_lib src/registry.cc)
 add_library(health_handler_lib src/health_handler.cc)
+add_library(sleep_handler_lib src/sleep_handler.cc)
 
 
 
@@ -143,6 +144,13 @@ target_link_libraries(health_handler_lib
                     Boost::log
                     )
 
+target_link_libraries(sleep_handler_lib
+                    request_handler_lib
+                    Boost::system 
+                    Boost::log_setup 
+                    Boost::log
+                    )
+
 target_link_libraries(request_handler_lib
                     config_interpreter_lib
                     Boost::system 
@@ -164,6 +172,7 @@ target_link_libraries(session_lib
                     echo_handler_lib
                     static_handler_lib
                     health_handler_lib
+                    sleep_handler_lib
                     crud_handler_lib
                     not_found_handler_lib
                     request_dispatcher_lib
@@ -276,6 +285,7 @@ if (NOT CMAKE_BUILD_TYPE STREQUAL Coverage)
     add_test(NAME IntegrationTests.crud_delete COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/tests/integration_tests/integration_test_crud_delete.py ${CMAKE_CURRENT_BINARY_DIR}/bin/server WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tests/integration_tests/)
     add_test(NAME IntegrationTests.crud_list COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/tests/integration_tests/integration_test_crud_list.py ${CMAKE_CURRENT_BINARY_DIR}/bin/server WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tests/integration_tests/)
     add_test(NAME IntegrationTests.health COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/tests/integration_tests/integration_test_health.py ${CMAKE_CURRENT_BINARY_DIR}/bin/server WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tests/integration_tests/)
+    add_test(NAME IntegrationTests.multithread COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/tests/integration_tests/integration_test_multithread.py ${CMAKE_CURRENT_BINARY_DIR}/bin/server WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tests/integration_tests/)
 endif()
 
 #Discover tests

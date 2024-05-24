@@ -12,6 +12,7 @@ struct ServerPaths{
     std::map<std::string, std::string> static_;
     std::map<std::string, std::string> crud_;
     std::vector<std::string> health_;
+    std::vector<std::string> sleep_;
 };
 
 #endif

@@ -11,6 +11,7 @@
 #include "not_found_handler.h"
 #include "crud_handler.h"
 #include "health_handler.h"
+#include "sleep_handler.h"
 
 
 int main(int argc, char* argv[]) {
@@ -37,6 +38,8 @@ int main(int argc, char* argv[]) {
         Registry::RegisterRequestHandler(None, NotFoundHandlerFactory::create);
         Registry::RegisterRequestHandler(CRUD, CrudHandlerFactory::create);
         Registry::RegisterRequestHandler(Health, HealthHandlerFactory::create);
+        Registry::RegisterRequestHandler(Sleep, SleepHandlerFactory::create);
+
 
         
         boost::asio::io_service io_service;

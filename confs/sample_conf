@@ -14,6 +14,9 @@ server {
   location /api CrudHandler {
     data_path ../data;
   }
-    location /health HealthHandler {
+  location /health HealthHandler {
+  }
+  
+  location /sleep SleepHandler {
   }
 }

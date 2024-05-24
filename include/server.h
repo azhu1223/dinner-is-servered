@@ -11,7 +11,7 @@ public:
     server(boost::asio::io_service& io_service, short port);
     void run();
     bool start_accept();
-
+    static void launch_sesion(session* new_session);
 
 private:
     void handle_accept(session* new_session, const boost::system::error_code& error);
