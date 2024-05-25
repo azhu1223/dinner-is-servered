@@ -1,0 +1,22 @@
+server {
+  listen 80;
+  location /echo EchoHandler {
+  }
+  location /staticimages StaticHandler {
+    root ../resources/images;
+  }
+  location /statictext StaticHandler {
+    root ../resources/text;
+  }
+  location /generalstatic StaticHandler {
+    root ../resources;
+  }
+  location /api CrudHandler {
+    data_path /mnt/storage/crud;
+  }
+  location /health HealthHandler {
+  }
+  
+  location /sleep SleepHandler {
+  }
+}

@@ -17,7 +17,7 @@ RUN ctest --output-on_failure
 FROM ubuntu:jammy as deploy
 
 COPY --from=builder /usr/src/project/build/bin/server ./bin
-COPY --from=builder /usr/src/project/confs/sample_conf .
+COPY --from=builder /usr/src/project/confs/cloud_config .
 COPY --from=builder /usr/src/project/resources ./resources
 
 
@@ -25,4 +25,4 @@ EXPOSE 80
 
 ENTRYPOINT ["./bin/server"]
 
-CMD ["sample_conf"]
+CMD ["cloud_config"]
