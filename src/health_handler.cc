@@ -1,11 +1,12 @@
 #include "health_handler.h"
 #include "request_handler.h"
+#include "logging_buffer.h"
 #include <string>
 #include <boost/log/trivial.hpp>
 
 namespace http = boost::beast::http;
 
-HealthHandler::HealthHandler() : RequestHandler() {}
+HealthHandler::HealthHandler(LoggingBuffer* logging_buffer) : RequestHandler(), logging_buffer_(logging_buffer) {}
 
 http::response<http::vector_body<char>> HealthHandler::handle_request(const http::request<http::vector_body<char>>& req) {
     std::vector<char> response_body_vector;
@@ -21,6 +22,6 @@ http::response<http::vector_body<char>> HealthHandler::handle_request(const http
     return response;
 }
 
-RequestHandler* HealthHandlerFactory::create() {
-    return new HealthHandler();
+RequestHandler* HealthHandlerFactory::create(LoggingBuffer* logging_buffer) {
+    return new HealthHandler(logging_buffer);
 }

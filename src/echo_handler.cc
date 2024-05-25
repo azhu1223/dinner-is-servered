@@ -1,12 +1,13 @@
 #include "echo_handler.h"
 #include "request_handler.h"
+#include "logging_buffer.h"
 #include <string>
 #include <vector>
 
 namespace http = boost::beast::http;
 
 
-EchoHandler::EchoHandler() : RequestHandler() {}
+EchoHandler::EchoHandler(LoggingBuffer* logging_buffer) : RequestHandler(), logging_buffer_(logging_buffer) {}
 
 http::response<http::vector_body<char>> EchoHandler::handle_request(const http::request<http::vector_body<char>>& req) {
     auto req_base = req.base();
@@ -50,6 +51,6 @@ http::response<http::vector_body<char>> EchoHandler::handle_request(const http::
 }
 
 
-RequestHandler* EchoHandlerFactory::create() {
-    return new EchoHandler();
+RequestHandler* EchoHandlerFactory::create(LoggingBuffer* logging_buffer) {
+    return new EchoHandler(logging_buffer);
 }

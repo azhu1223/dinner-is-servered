@@ -10,15 +10,22 @@
 #include "request_dispatcher.h"
 #include "crud_file_manager.h"
 #include <unordered_map>
+#include "logging_buffer.h"
+#include <queue>
+
 namespace http = boost::beast::http;
 
 class FakeCrudFileManager : public CrudFileManager {
   public:
+    FakeCrudFileManager(LoggingBuffer* logging_buffer);
     virtual bool readObject(CrudPath path, std::string& json) override;
     virtual bool writeObject(CrudPath path, std::string json) override;
   private:
     std::unordered_map<std::string,std::string> filesystem;
+    LoggingBuffer* logging_buffer_;
 };
+
+FakeCrudFileManager::FakeCrudFileManager(LoggingBuffer* logging_buffer) : CrudFileManager(logging_buffer), logging_buffer_(logging_buffer) {}
 
 bool FakeCrudFileManager::readObject(CrudPath path, std::string& json) {
   std::string file_path = path.entity_name + "/" + path.entity_id;
@@ -35,8 +42,13 @@ bool FakeCrudFileManager::writeObject(CrudPath path, std::string json) {
 
 class CrudHandlerTest : public ::testing::Test {
 protected:
+    std::queue<BufferEntry> q1;
+    std::queue<BufferEntry> q2;
+    LoggingBuffer* lb;
+
     void SetUp() override {
-        handler = new CrudHandler(std::make_shared<FakeCrudFileManager>());
+        lb = new LoggingBuffer(&q1, &q2);
+        handler = new CrudHandler(std::make_shared<FakeCrudFileManager>(lb), lb);
     }
 
     void TearDown() override {
@@ -70,8 +82,8 @@ TEST_F(CrudHandlerTest, PostRequestSuccessTest) {
     req.body() = post_body;
     req.prepare_payload();
 
-    std::shared_ptr<FakeCrudFileManager> manager = std::make_shared<FakeCrudFileManager>();
-    CrudHandler handler(manager);
+    std::shared_ptr<FakeCrudFileManager> manager = std::make_shared<FakeCrudFileManager>(lb);
+    CrudHandler handler(manager, lb);
     http::response<http::vector_body<char>> response = handler.handle_request(req);
 
     EXPECT_EQ(response.result(), http::status::created);
@@ -95,8 +107,8 @@ TEST_F(CrudHandlerTest, PostRequestFailTest) {
     req.body() = post_body;
     req.prepare_payload();
 
-    std::shared_ptr<FakeCrudFileManager> manager = std::make_shared<FakeCrudFileManager>();
-    CrudHandler handler(manager);
+    std::shared_ptr<FakeCrudFileManager> manager = std::make_shared<FakeCrudFileManager>(lb);
+    CrudHandler handler(manager, lb);
     http::response<http::vector_body<char>> response = handler.handle_request(req);
 
     EXPECT_EQ(response.result(), http::status::bad_request);
@@ -127,8 +139,8 @@ TEST_F(CrudHandlerTest, PutRequestSuccessTest) {
     req.body() = post_body;
     req.prepare_payload();
 
-     std::shared_ptr<CrudFileManager> manager = std::make_shared<CrudFileManager>();;
-    CrudHandler handler(manager);
+     std::shared_ptr<CrudFileManager> manager = std::make_shared<CrudFileManager>(lb);;
+    CrudHandler handler(manager, lb);
     http::response<http::vector_body<char>> response = handler.handle_request(req);
     EXPECT_EQ(response.result(), http::status::created);
 
@@ -178,8 +190,8 @@ TEST_F(CrudHandlerTest, PutRequestFailTest_NoObject) {
     req.body() = put_body;
     req.prepare_payload();
 
-    std::shared_ptr<CrudFileManager> manager = std::make_shared<CrudFileManager>();
-    CrudHandler handler(manager);
+    std::shared_ptr<CrudFileManager> manager = std::make_shared<CrudFileManager>(lb);
+    CrudHandler handler(manager, lb);
     http::response<http::vector_body<char>> response = handler.handle_request(req);
     EXPECT_EQ(response.result(), http::status::created);
 }
@@ -207,8 +219,8 @@ TEST_F(CrudHandlerTest, PutRequestFailTest_EmptyId) {
     req.body() = put_body;
     req.prepare_payload();
 
-    std::shared_ptr<CrudFileManager> manager = std::make_shared<CrudFileManager>();
-    CrudHandler handler(manager);
+    std::shared_ptr<CrudFileManager> manager = std::make_shared<CrudFileManager>(lb);
+    CrudHandler handler(manager, lb);
     http::response<http::vector_body<char>> response = handler.handle_request(req);
     EXPECT_EQ(response.result(), http::status::bad_request);
 }
@@ -231,8 +243,8 @@ TEST_F(CrudHandlerTest, GetRequestSuccessTest) {
     post_request.body() = post_body;
     post_request.prepare_payload();
 
-    std::shared_ptr<FakeCrudFileManager> manager = std::make_shared<FakeCrudFileManager>();
-    CrudHandler handler(manager);
+    std::shared_ptr<FakeCrudFileManager> manager = std::make_shared<FakeCrudFileManager>(lb);
+    CrudHandler handler(manager, lb);
     handler.handle_request(post_request);
 
     http::request<http::vector_body<char>> get_request;
@@ -253,8 +265,8 @@ TEST_F(CrudHandlerTest, GetRequestFailNotFoundTest) {
     sp.crud_ = crud_paths;
     ConfigInterpreter::setServerPaths(sp);
 
-    std::shared_ptr<FakeCrudFileManager> manager = std::make_shared<FakeCrudFileManager>();
-    CrudHandler handler(manager);
+    std::shared_ptr<FakeCrudFileManager> manager = std::make_shared<FakeCrudFileManager>(lb);
+    CrudHandler handler(manager, lb);
 
     http::request<http::vector_body<char>> get_request;
     get_request.method(http::verb::get);
@@ -292,8 +304,8 @@ TEST_F(CrudHandlerTest, DeleteRequestSuccessTest) {
     req.body() = post_body;
     req.prepare_payload();
 
-    std::shared_ptr<CrudFileManager> manager = std::make_shared<CrudFileManager>();;
-    CrudHandler handler(manager);
+    std::shared_ptr<CrudFileManager> manager = std::make_shared<CrudFileManager>(lb);;
+    CrudHandler handler(manager, lb);
     http::response<http::vector_body<char>> response = handler.handle_request(req);
     EXPECT_EQ(response.result(), http::status::created);
 
@@ -337,8 +349,8 @@ TEST_F(CrudHandlerTest, DeleteRequestFailNoIDTest) {
     req.body() = post_body;
     req.prepare_payload();
 
-    std::shared_ptr<CrudFileManager> manager = std::make_shared<CrudFileManager>();;
-    CrudHandler handler(manager);
+    std::shared_ptr<CrudFileManager> manager = std::make_shared<CrudFileManager>(lb);;
+    CrudHandler handler(manager, lb);
     http::response<http::vector_body<char>> response = handler.handle_request(req);
     EXPECT_EQ(response.result(), http::status::created);
 
@@ -374,8 +386,8 @@ TEST_F(CrudHandlerTest, DeleteRequestFailNoFileTest) {
     req.version(11);
     req.prepare_payload();
 
-    std::shared_ptr<CrudFileManager> manager = std::make_shared<CrudFileManager>();;
-    CrudHandler handler(manager);
+    std::shared_ptr<CrudFileManager> manager = std::make_shared<CrudFileManager>(lb);;
+    CrudHandler handler(manager, lb);
     http::response<http::vector_body<char>> response = handler.handle_request(req);
     EXPECT_EQ(response.result(), http::status::no_content);
 
@@ -406,8 +418,8 @@ TEST_F(CrudHandlerTest, ListRequestPassNoFilesTest) {
     list_request.body() = list_body;
     list_request.prepare_payload();
 
-    std::shared_ptr<CrudFileManager> manager = std::make_shared<CrudFileManager>();;
-    CrudHandler handler(manager);
+    std::shared_ptr<CrudFileManager> manager = std::make_shared<CrudFileManager>(lb);;
+    CrudHandler handler(manager, lb);
     http::response<http::vector_body<char>> response = handler.handle_request(list_request);
     EXPECT_EQ(response.result(), http::status::ok);
 
@@ -440,8 +452,8 @@ TEST_F(CrudHandlerTest, ListRequestPassOneFileTest) {
     req.body() = post_body;
     req.prepare_payload();
 
-     std::shared_ptr<CrudFileManager> manager = std::make_shared<CrudFileManager>();;
-    CrudHandler handler(manager);
+     std::shared_ptr<CrudFileManager> manager = std::make_shared<CrudFileManager>(lb);;
+    CrudHandler handler(manager, lb);
     http::response<http::vector_body<char>> response = handler.handle_request(req);
     EXPECT_EQ(response.result(), http::status::created);
 
@@ -487,8 +499,8 @@ TEST_F(CrudHandlerTest, ListRequestPassMultipleFilesTest) {
     req.body() = post_body;
     req.prepare_payload();
 
-    std::shared_ptr<CrudFileManager> manager = std::make_shared<CrudFileManager>();;
-    CrudHandler handler(manager);
+    std::shared_ptr<CrudFileManager> manager = std::make_shared<CrudFileManager>(lb);;
+    CrudHandler handler(manager, lb);
     http::response<http::vector_body<char>> response = handler.handle_request(req);
     EXPECT_EQ(response.result(), http::status::created);
 
@@ -522,7 +534,7 @@ TEST_F(CrudHandlerTest, ListRequestPassMultipleFilesTest) {
 // (6) Miscellaneous Tests 
 
 TEST_F(CrudHandlerTest, Factory) {
-    auto factory_genereated_handler = CrudHandlerFactory::create();
+    auto factory_genereated_handler = CrudHandlerFactory::create(lb);
     EXPECT_TRUE(factory_genereated_handler != nullptr);
 }
 

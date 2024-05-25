@@ -7,11 +7,17 @@
 #include <vector>
 #include <map>
 #include "config_interpreter.h"
+#include "logging_buffer.h"
+#include <queue>
 
 
 namespace http = boost::beast::http;
 
 TEST(EchoHandlerTest, RequestHandlerTest) {
+    std::queue<BufferEntry> q1;
+    std::queue<BufferEntry> q2;
+    LoggingBuffer* lb;
+
     //Setup
     std::vector<std::string> echo_paths;
     std::map<std::string, std::string> static_paths;
@@ -34,7 +40,7 @@ TEST(EchoHandlerTest, RequestHandlerTest) {
     request.set(http::field::accept, "*/*");
 
     GTEST_LOG_(INFO) << "Creating EchoHandler";
-    EchoHandler eh = EchoHandler();
+    EchoHandler eh = EchoHandler(lb);
 
     GTEST_LOG_(INFO) << "Invoking handle_request";
     auto response = eh.handle_request(request);
@@ -53,8 +59,11 @@ TEST(EchoHandlerTest, RequestHandlerTest) {
 }
 
 TEST(EchoHandlerTest, Factory) {
+    std::queue<BufferEntry> q1;
+    std::queue<BufferEntry> q2;
+    LoggingBuffer* lb;
 
-    auto factory_genereated_handler = EchoHandlerFactory::create();
+    auto factory_genereated_handler = EchoHandlerFactory::create(lb);
 
     EXPECT_TRUE(factory_genereated_handler != nullptr);
 }

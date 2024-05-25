@@ -7,7 +7,7 @@
 
 namespace http = boost::beast::http;
 
-SleepHandler::SleepHandler() : RequestHandler() {}
+SleepHandler::SleepHandler(LoggingBuffer* logging_buffer) : RequestHandler(), logging_buffer_(logging_buffer) {}
 
 http::response<http::vector_body<char>> SleepHandler::handle_request(const http::request<http::vector_body<char>>& req) {
     std::vector<char> response_body_vector;
@@ -19,13 +19,13 @@ http::response<http::vector_body<char>> SleepHandler::handle_request(const http:
 
     response.prepare_payload();
 
-    BOOST_LOG_TRIVIAL(info) << "Going to sleep";
+    logging_buffer_->addToBuffer(INFO, "Going to sleep");
     std::this_thread::sleep_for(std::chrono::milliseconds(1000));
-    BOOST_LOG_TRIVIAL(info) << "Now awake";
+    logging_buffer_->addToBuffer(INFO, "Now awake");
 
     return response;
 }
 
-RequestHandler* SleepHandlerFactory::create() {
-    return new SleepHandler();
+RequestHandler* SleepHandlerFactory::create(LoggingBuffer* logging_buffer) {
+    return new SleepHandler(logging_buffer);
 }

@@ -7,17 +7,25 @@
 #include <gmock/gmock.h>
 #include <boost/beast/http.hpp>
 #include "request_dispatcher.h"
+#include "logging_buffer.h"
+#include <queue>
 
 
 namespace http = boost::beast::http;
 
 class StaticHandlerTest : public ::testing::Test {
 protected:
+    std::queue<BufferEntry> q1;
+    std::queue<BufferEntry> q2;
+    LoggingBuffer* lb;
+
     void SetUp() override {
-        handler = new StaticHandler();
+        lb = new LoggingBuffer(&q1, &q2);
+        handler = new StaticHandler(lb);
     }
 
     void TearDown() override {
+        delete lb;
         delete handler;
     }
 
@@ -27,7 +35,7 @@ protected:
 
 TEST_F(StaticHandlerTest, DeterminesContentType) {
 
-    StaticHandler handler;
+    StaticHandler handler(lb);
 
     EXPECT_EQ(handler.get_response_content_type("test.jpeg"), "image/jpeg");
     EXPECT_EQ(handler.get_response_content_type("test.html"), "text/html");
@@ -50,7 +58,7 @@ TEST_F(StaticHandlerTest, RequestHandlerTest) {
     ConfigInterpreter::setServerPaths(sp);
 
 
-    StaticHandler handler;
+    StaticHandler handler(lb);
 
     boost::string_view target = "/resources/text/oof.txt";
 
@@ -88,7 +96,7 @@ TEST_F(StaticHandlerTest, RequestHandlerTest) {
 
 TEST_F(StaticHandlerTest, Factory) {
 
-    auto factory_genereated_handler = StaticHandlerFactory::create();
+    auto factory_genereated_handler = StaticHandlerFactory::create(lb);
 
     EXPECT_TRUE(factory_genereated_handler != nullptr);
 }
@@ -119,7 +127,7 @@ TEST_F(StaticHandlerTest, UnsupportedFileType) {
     sp.static_ = static_paths;
     ConfigInterpreter::setServerPaths(sp);
 
-    StaticHandler handler;
+    StaticHandler handler(lb);
 
     boost::string_view target = "/resources/text/oof.xyz";
 

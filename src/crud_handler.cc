@@ -1,16 +1,16 @@
 #include "request_handler.h"
 #include "crud_handler.h"
 #include "utils.h"
-#include <boost/log/trivial.hpp>
 #include <fstream>
 #include <vector>
 #include <string>
 #include "request_dispatcher.h"
+#include "logging_buffer.h"
 
 #include "crud_file_manager.h"
 #include <sstream>
 
-CrudHandler::CrudHandler(std::shared_ptr<CrudFileManager> manager) : RequestHandler(), file_manager(manager) {}
+CrudHandler::CrudHandler(std::shared_ptr<CrudFileManager> manager, LoggingBuffer* logging_buffer) : RequestHandler(), file_manager(manager), logging_buffer_(logging_buffer){}
 
 CrudHandler::~CrudHandler() {
 }
@@ -18,7 +18,7 @@ CrudHandler::~CrudHandler() {
 http::response<http::vector_body<char>> CrudHandler::handle_post(CrudPath path, const http::request<http::vector_body<char>>& req) {
   http::response<http::vector_body<char>> response;
   if (path.entity_id != "") {
-    BOOST_LOG_TRIVIAL(error) << "Invalid CRUD POST request. Request may not contain Entity ID";
+    logging_buffer_->addToBuffer(ERROR, "Invalid CRUD POST request. Request may not contain Entity ID");
     std::string response_body_string = "400 Bad Request \r\n\r\n";
     std::vector<char> response_body_vector(response_body_string.begin(), response_body_string.end());
     response = http::response<http::vector_body<char>>(http::status::bad_request, 11U, response_body_vector);
@@ -35,7 +35,7 @@ http::response<http::vector_body<char>> CrudHandler::handle_post(CrudPath path, 
   // (2) get the data in POST body
   std::vector<char> req_body(req.body());
   std::string req_body_string(req_body.begin(),req_body.end());
-  BOOST_LOG_TRIVIAL(info) << "POST request body: " << req_body_string;
+  logging_buffer_->addToBuffer(INFO, "POST request body: " + req_body_string);
 
   // (3) write the Entity data to filesystem
   file_manager->writeObject(path, req_body_string);
@@ -54,7 +54,7 @@ http::response<http::vector_body<char>> CrudHandler::handle_list(CrudPath path, 
   http::response<http::vector_body<char>> response;
   // (1) Check if entity_name is present 
   if (path.entity_name == "") {
-    BOOST_LOG_TRIVIAL(error) << "Invalid CRUD GET request. Request must contain Entity Name";
+    logging_buffer_->addToBuffer(ERROR, "Invalid CRUD GET request. Request must contain Entity Name");
     std::string response_body_string = "400 Bad Request \r\n\r\n";
     std::vector<char> response_body_vector(response_body_string.begin(), response_body_string.end());
     response = http::response<http::vector_body<char>>(http::status::bad_request, 11U, response_body_vector);
@@ -98,7 +98,7 @@ http::response<http::vector_body<char>> CrudHandler::handle_get(CrudPath path, c
   std::string file_contents;
   bool read_success = file_manager->readObject(path, file_contents);
   if (!read_success) {
-    BOOST_LOG_TRIVIAL(error) << "Error reading requested file.";
+    logging_buffer_->addToBuffer(ERROR, "Error reading requested file.");
     std::string response_body_string = "404 Not Found\r\n\r\n";
     std::vector<char> response_body_vector(response_body_string.begin(), response_body_string.end());
     response = http::response<http::vector_body<char>>(http::status::not_found, 11U, response_body_vector);
@@ -125,7 +125,7 @@ http::response<http::vector_body<char>> CrudHandler::handle_put(CrudPath path, c
 
   // (1) First, ensure that the entity_name and entity_id is present 
   if (empty_entity_name || empty_entity_id) {
-    BOOST_LOG_TRIVIAL(error) << "Invalid CRUD POST request. Request must contain Entity Name and Entity ID";
+    logging_buffer_->addToBuffer(ERROR, "Invalid CRUD POST request. Request must contain Entity Name and Entity ID");
     std::string response_body_string = "400 Bad Request \r\n\r\n";
     std::vector<char> response_body_vector(response_body_string.begin(), response_body_string.end());
     response = http::response<http::vector_body<char>>(http::status::bad_request, 11U, response_body_vector);
@@ -138,7 +138,7 @@ http::response<http::vector_body<char>> CrudHandler::handle_put(CrudPath path, c
   // (2) Valid PUT request, so get the data in the PUT body
   std::vector<char> req_body(req.body());
   std::string req_body_string(req_body.begin(),req_body.end());
-  BOOST_LOG_TRIVIAL(info) << "PUT request body: " << req_body_string;
+  logging_buffer_->addToBuffer(INFO, "PUT request body: " + req_body_string);
 
   // (3) Next, check if this entity id corresponds to an existing object 
   bool entity_exists = file_manager->existsObject(path); 
@@ -175,7 +175,7 @@ http::response<http::vector_body<char>> CrudHandler::handle_del(CrudPath path, c
 
   // (1) First, ensure that the entity_name and entity_id is present 
   if (empty_entity_name || empty_entity_id) {
-    BOOST_LOG_TRIVIAL(error) << "Invalid CRUD DELETE request. Request must contain Entity Name and Entity ID";
+    logging_buffer_->addToBuffer(ERROR, "Invalid CRUD DELETE request. Request must contain Entity Name and Entity ID");
     std::string response_body_string = "400 Bad Request \r\n\r\n";
     std::vector<char> response_body_vector(response_body_string.begin(), response_body_string.end());
     response = http::response<http::vector_body<char>>(http::status::bad_request, 11U, response_body_vector);
@@ -209,12 +209,12 @@ http::response<http::vector_body<char>> CrudHandler::handle_del(CrudPath path, c
 
 http::response<http::vector_body<char>> CrudHandler::handle_request(const http::request<http::vector_body<char>>& req) {
     http::response<http::vector_body<char>> response;
-    CrudPath path = RequestDispatcher::getCrudEntityPath(req);
+    CrudPath path = RequestDispatcher::getCrudEntityPath(req, logging_buffer_);
 
 
     //Ensure that the method is GET, POST, PUT, or DELETE
     if (req.method() != http::verb::get && req.method() != http::verb::post && req.method() != http::verb::put && req.method() != http::verb::delete_) {
-      BOOST_LOG_TRIVIAL(error) << "Invalid CRUD request method. Must be one of POST/GET/PUT/DELETE";
+      logging_buffer_->addToBuffer(ERROR, "Invalid CRUD request method. Must be one of POST/GET/PUT/DELETE");
       std::string response_body_string = "400 Bad Request\r\nRequest method must be one of POST/GET/PUT/DELETE \r\n\r\n";
       std::vector<char> response_body_vector(response_body_string.begin(), response_body_string.end());
       response = http::response<http::vector_body<char>>(http::status::bad_request, 11U, response_body_vector);
@@ -225,7 +225,7 @@ http::response<http::vector_body<char>> CrudHandler::handle_request(const http::
     }
     //Otherwise, ensure that an entity is present
     else if (path.entity_name == "") {
-      BOOST_LOG_TRIVIAL(error) << "Invalid CRUD request. Missing Entity name";
+      logging_buffer_->addToBuffer(ERROR, "Invalid CRUD request. Missing Entity name");
       std::string response_body_string = "400 Bad Request\r\nRequest must contain Entity name \r\n\r\n";
       std::vector<char> response_body_vector(response_body_string.begin(), response_body_string.end());
       response = http::response<http::vector_body<char>>(http::status::bad_request, 11U, response_body_vector);
@@ -247,13 +247,13 @@ http::response<http::vector_body<char>> CrudHandler::handle_request(const http::
     }
 
 
-      BOOST_LOG_TRIVIAL(error) << "Should never reach here. All cases should be handled above";
+      logging_buffer_->addToBuffer(ERROR, "Should never reach here. All cases should be handled above");
       std::vector<char> response_body_vector;;
       response = http::response<http::vector_body<char>>(http::status::bad_request, 11U, response_body_vector);
       response.prepare_payload();
       return response;
 }
 
-RequestHandler* CrudHandlerFactory::create() {
-    return new CrudHandler(std::make_shared<CrudFileManager>());
+RequestHandler* CrudHandlerFactory::create(LoggingBuffer* logging_buffer) {
+    return new CrudHandler(std::make_shared<CrudFileManager>(logging_buffer), logging_buffer);
 }

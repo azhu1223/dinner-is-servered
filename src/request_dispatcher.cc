@@ -11,22 +11,25 @@
 #include "echo_handler.h"
 #include "static_handler.h"
 #include "registry.h"
+#include "logging_buffer.h"
+
+namespace http = boost::beast::http;
 
 
-RequestType RequestDispatcher::getRequestType(const boost::beast::http::request<boost::beast::http::vector_body<char>>& request){
+RequestType RequestDispatcher::getRequestType(const http::request<http::vector_body<char>>& request, LoggingBuffer* logging_buffer){
     boost::beast::string_view target = request.target();
-    BOOST_LOG_TRIVIAL(info) << "Paths are: ";
+    logging_buffer->addToBuffer(INFO, "Paths are: ");
     ServerPaths server_paths = ConfigInterpreter::getServerPaths();
-    BOOST_LOG_TRIVIAL(info) << "Determining request type. Target is: " << target;
-    BOOST_LOG_TRIVIAL(info) << "Paths are: ";
+    logging_buffer->addToBuffer(INFO, "Determining request type. Target is: " + target.to_string());
+    logging_buffer->addToBuffer(INFO, "Paths are: ");
     for (auto path : server_paths.static_){
-        BOOST_LOG_TRIVIAL(info) << path.first;
+        logging_buffer->addToBuffer(INFO, path.first);
     }
     for (auto path : server_paths.echo_){
-        BOOST_LOG_TRIVIAL(info) << path;
+        logging_buffer->addToBuffer(INFO, path);
     }
     for (auto path : server_paths.crud_){
-        BOOST_LOG_TRIVIAL(info) << path.first;
+        logging_buffer->addToBuffer(INFO, path.first);
     }
 
 
@@ -38,14 +41,14 @@ RequestType RequestDispatcher::getRequestType(const boost::beast::http::request<
     //Remove back to back slashes and trailing slashes
     for (char c : target) {
         if (c == '/' && is_prev_shash) {
-            BOOST_LOG_TRIVIAL(info) << "Found multiple slashes in a row";
+            logging_buffer->addToBuffer(INFO, "Found multiple slashes in a row");
             continue;
         }
         result += c;
         is_prev_shash = (c == '/');
     }
     while (result.back() == '/' && result.length() > 1) {
-        BOOST_LOG_TRIVIAL(info) << "Found trailing slash";
+        logging_buffer->addToBuffer(INFO, "Found trailing slash");
         result.pop_back();
     }
 
@@ -93,26 +96,26 @@ RequestType RequestDispatcher::getRequestType(const boost::beast::http::request<
     }
 
     if (request_type == None){
-        BOOST_LOG_TRIVIAL(error) << "There was no matching path found for the request. 404 Handler should be invoked";
+        logging_buffer->addToBuffer(ERROR, "There was no matching path found for the request. 404 Handler should be invoked");
         return request_type;
     }
     else if (request_type == Static){
         std::ifstream file(server_paths.static_[longest_path] + result.substr(result.find(longest_path) + longest_path.length()),
             std::ios::in | std::ios::binary);
         if (!file.is_open()) {
-            BOOST_LOG_TRIVIAL(error) << "File not found. 404 Handler should be invoked";
+            logging_buffer->addToBuffer(ERROR, "File not found. 404 Handler should be invoked");
             request_type = None;
             return request_type;
         }
     }
 
 
-    BOOST_LOG_TRIVIAL(info) << "Request is of type " << RequestDispatcher::request_type_tostr(request_type);
+    logging_buffer->addToBuffer(INFO, "Request is of type " + RequestDispatcher::request_type_tostr(request_type, logging_buffer));
     return request_type;
 }
 
 std::string RequestDispatcher::getStaticFilePath
-    (const boost::beast::http::request<boost::beast::http::vector_body<char>>& request){
+    (const http::request<http::vector_body<char>>& request, LoggingBuffer* logging_buffer){
 
     boost::beast::string_view target = request.target();
     ServerPaths server_paths = ConfigInterpreter::getServerPaths();
@@ -156,19 +159,19 @@ std::string RequestDispatcher::getStaticFilePath
     }
 
     if (request_type != Static){
-        BOOST_LOG_TRIVIAL(error) << "getStaticFilePath was called for a non-static request";
+        logging_buffer->addToBuffer(ERROR, "getStaticFilePath was called for a non-static request");
         return "";
     }
 
 
     std::string file_path = server_paths.static_[longest_path] 
                         + result.substr(result.find(longest_path) + longest_path.length());
-    BOOST_LOG_TRIVIAL(info) << "Set file_path_ to " << file_path;
+    logging_buffer->addToBuffer(INFO, "Set file_path_ to " + file_path);
     return file_path;
 };
 
 CrudPath RequestDispatcher::getCrudEntityPath
-    (const boost::beast::http::request<boost::beast::http::vector_body<char>>& request){
+    (const http::request<http::vector_body<char>>& request, LoggingBuffer* logging_buffer){
 
     boost::beast::string_view target = request.target();
     ServerPaths server_paths = ConfigInterpreter::getServerPaths();
@@ -217,7 +220,7 @@ CrudPath RequestDispatcher::getCrudEntityPath
     }
 
     if (request_type != CRUD){
-        BOOST_LOG_TRIVIAL(error) << "getCrudEntityID was called for a non-CRUD request";
+        logging_buffer->addToBuffer(ERROR, "getCrudEntityID was called for a non-CRUD request");
         CrudPath empty;
         return empty;
     }
@@ -233,8 +236,8 @@ CrudPath RequestDispatcher::getCrudEntityPath
     } else if (entity_path.size() > 1) {
       entity_name = entity_path.substr(1);
     }
-    BOOST_LOG_TRIVIAL(info) << "entity: " << entity_name;
-    BOOST_LOG_TRIVIAL(info) << "id: " << entity_id;
+    logging_buffer->addToBuffer(INFO, "entity: " + entity_name);
+    logging_buffer->addToBuffer(INFO, "id: " + entity_id);
 
     CrudPath crud_path;
     crud_path.data_path = server_paths.crud_[longest_path];
@@ -244,7 +247,7 @@ CrudPath RequestDispatcher::getCrudEntityPath
     return crud_path;
 };
 
-std::string RequestDispatcher::request_type_tostr(RequestType request_type){
+std::string RequestDispatcher::request_type_tostr(RequestType request_type, LoggingBuffer* logging_buffer){
     switch (request_type) {
         case Static:
             return "Static";
@@ -266,38 +269,41 @@ std::string RequestDispatcher::request_type_tostr(RequestType request_type){
 }
 
 
-http::response<http::vector_body<char>> RequestDispatcher::dispatch_request(const boost::beast::http::request<boost::beast::http::vector_body<char>>& request, const boost::asio::ip::tcp::socket& socket){
+http::response<http::vector_body<char>> RequestDispatcher::dispatch_request(const http::request<http::vector_body<char>>& request, const boost::asio::ip::tcp::socket& socket, LoggingBuffer* logging_buffer){
 
         //Determine the request type and get request object
-        RequestType request_type = RequestDispatcher::getRequestType(request);
+        RequestType request_type = RequestDispatcher::getRequestType(request, logging_buffer);
         boost::system::error_code ec;
 
-        BOOST_LOG_TRIVIAL(info) << "Request from " << socket.remote_endpoint(ec).address() 
-            << " for target " << request.target();
+        logging_buffer->addToBuffer(INFO, "Request from " + socket.remote_endpoint(ec).address().to_string() + " for target " + request.target().to_string());
         if (ec){
-            BOOST_LOG_TRIVIAL(error) << "handle_read: Transport endpoint is not connected";
+            logging_buffer->addToBuffer(ERROR, "handle_read: Transport endpoint is not connected");
         }
 
         http::response<http::vector_body<char>> response;
         //Check for empty request or unknown method
-        if (request.target().empty() || request.method() == boost::beast::http::verb::unknown){
-            BOOST_LOG_TRIVIAL(error) << "Empty request or unknown method";
+        if (request.target().empty() || request.method() == http::verb::unknown){
+            logging_buffer->addToBuffer(ERROR, "Empty request or unknown method");
             std::vector<char> body;
             response = http::response<http::vector_body<char>>(http::status::bad_request, 11U, body);
             response.prepare_payload();
         }
         //Otherwise, dispatch request to appropriate handler
         else{
-            RequestHandler* rh =  Registry::GetRequestHandler(request_type);
+            RequestHandler* rh =  Registry::GetRequestHandler(request_type, logging_buffer);
             response = rh->handle_request(request);
         }
 
-        BOOST_LOG_TRIVIAL(info) << "[ResponseMetrics]" << "\t" 
+        std::stringstream s;
+
+        s << "[ResponseMetrics]" << "\t" 
                                 << "Request IP: " << socket.remote_endpoint(ec).address()  << "\t"
                                 << "Request Target: " << request.target() << "\t"
                                 << "Response Code: " << response.result_int() << "\t"
                                 << "Response Message: " << response.result() << "\t"
-                                << "Response Handler: " << RequestDispatcher::request_type_tostr(request_type);
+                                << "Response Handler: " << RequestDispatcher::request_type_tostr(request_type, logging_buffer);
+
+        logging_buffer->addToBuffer(INFO, s.str());
 
         return response;
 }

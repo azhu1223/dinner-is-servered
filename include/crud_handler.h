@@ -6,12 +6,13 @@
 #include <vector>
 #include <unordered_set>
 #include "crud_file_manager.h"
+#include "logging_buffer.h"
 
 namespace http = boost::beast::http;
 
 class CrudHandler : public RequestHandler {
     public:
-        CrudHandler(std::shared_ptr<CrudFileManager> manager);
+        CrudHandler(std::shared_ptr<CrudFileManager> manager, LoggingBuffer* logging_buffer);
         ~CrudHandler();
         virtual http::response<http::vector_body<char>> handle_request(const http::request<http::vector_body<char>>& req);
     private:
@@ -23,11 +24,12 @@ class CrudHandler : public RequestHandler {
 
         std::shared_ptr<CrudFileManager> file_manager;
         int max_unused_entity_id = 1; 
+        LoggingBuffer* logging_buffer_;
 };
 
 class CrudHandlerFactory{
     public:
-        static RequestHandler* create();
+        static RequestHandler* create(LoggingBuffer* logging_buffer);
 };
 
 #endif

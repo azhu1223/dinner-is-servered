@@ -7,6 +7,7 @@
 #include <boost/asio.hpp>
 #include <string>
 #include "crud_file_manager.h"
+#include "logging_buffer.h"
 
 namespace http = boost::beast::http;
 
@@ -24,11 +25,11 @@ enum RequestType {
 class RequestDispatcher {
 
     public:
-        static RequestType getRequestType(const boost::beast::http::request<boost::beast::http::vector_body<char>>& request);
-        static std::string getStaticFilePath(const boost::beast::http::request<boost::beast::http::vector_body<char>>& request);
-        static CrudPath getCrudEntityPath(const boost::beast::http::request<boost::beast::http::vector_body<char>>& request);
-        static std::string request_type_tostr(RequestType request_type);
-        static http::response<http::vector_body<char>> dispatch_request(const boost::beast::http::request<boost::beast::http::vector_body<char>>& request, const boost::asio::ip::tcp::socket& socket);
+        static RequestType getRequestType(const http::request<http::vector_body<char>>& request, LoggingBuffer* logging_buffer);
+        static std::string getStaticFilePath(const http::request<http::vector_body<char>>& request, LoggingBuffer* logging_buffer);
+        static CrudPath getCrudEntityPath(const http::request<http::vector_body<char>>& request, LoggingBuffer* logging_buffer);
+        static std::string request_type_tostr(RequestType request_type, LoggingBuffer* logging_buffer);
+        static http::response<http::vector_body<char>> dispatch_request(const http::request<http::vector_body<char>>& request, const boost::asio::ip::tcp::socket& socket, LoggingBuffer* logging_buffer);
 };
 
 #endif

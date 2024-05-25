@@ -6,12 +6,14 @@
 #include <boost/beast/http.hpp>
 #include <string>
 #include <vector>
+#include <memory>
+#include "logging_buffer.h"
 
 namespace http = boost::beast::http;
 
-class session {
+class session : public std::enable_shared_from_this<session> {
     public:
-        session(boost::asio::io_service& io_service);
+        session(boost::asio::io_service& io_service, LoggingBuffer* logging_buffer);
         bool start();
         boost::asio::ip::tcp::socket& socket();
         bool handle_read(const boost::system::error_code& error, size_t bytes_transferred);
@@ -23,5 +25,6 @@ class session {
         boost::beast::flat_buffer buff_;
         http::response<http::vector_body<char>> response_;
         http::request<http::vector_body<char>> request_;
+        LoggingBuffer* logging_buffer_;
 };
 #endif // SESSION_H

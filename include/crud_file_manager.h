@@ -1,6 +1,7 @@
 #ifndef CRUD_FILE_MANAGER_H
 #define CRUD_FILE_MANAGER_H
 
+#include "logging_buffer.h"
 #include <string>
 #include <vector>
 #include <mutex>
@@ -12,6 +13,7 @@ struct CrudPath {
 };
 class CrudFileManager {
     public:
+        CrudFileManager(LoggingBuffer* logging_buffer);
         virtual bool readObject(CrudPath file_path, std::string& json);
         virtual bool writeObject(CrudPath file_path, std::string json);
         virtual bool deleteObject(CrudPath file_path);
@@ -22,6 +24,7 @@ class CrudFileManager {
     private:
         bool writeEntityId(CrudPath path, u_int64_t max_id);
         std::mutex entity_id_file_mutex;
+        LoggingBuffer* logging_buffer_;
 };
 
 #endif

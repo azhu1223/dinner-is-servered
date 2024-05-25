@@ -70,10 +70,18 @@ add_library(not_found_handler_lib src/not_found_handler.cc)
 add_library(registry_lib src/registry.cc)
 add_library(health_handler_lib src/health_handler.cc)
 add_library(sleep_handler_lib src/sleep_handler.cc)
+add_library(logging_buffer_lib src/logging_buffer.cc)
 
 
 
 target_link_libraries(logger_lib
+                    Boost::system 
+                    Boost::log_setup 
+                    Boost::log
+                    )
+
+target_link_libraries(logging_buffer_lib
+                    logger_lib
                     Boost::system 
                     Boost::log_setup 
                     Boost::log
@@ -103,6 +111,7 @@ target_link_libraries(config_interpreter_lib
 target_link_libraries(static_handler_lib
                     request_handler_lib
                     request_dispatcher_lib
+                    logging_buffer_lib
                     Boost::system 
                     Boost::log_setup 
                     Boost::log
@@ -112,12 +121,14 @@ target_link_libraries(crud_handler_lib
                     request_handler_lib
                     request_dispatcher_lib
                     crud_file_manager_lib
+                    logging_buffer_lib
                     Boost::system 
                     Boost::log_setup 
                     Boost::log
                     )
 
 target_link_libraries(crud_file_manager_lib
+                    logging_buffer_lib
                     Boost::system 
                     Boost::log_setup 
                     Boost::log
@@ -125,6 +136,7 @@ target_link_libraries(crud_file_manager_lib
 
 target_link_libraries(not_found_handler_lib
                     request_handler_lib
+                    logging_buffer_lib
                     Boost::system 
                     Boost::log_setup 
                     Boost::log
@@ -132,6 +144,7 @@ target_link_libraries(not_found_handler_lib
 
 target_link_libraries(echo_handler_lib
                     request_handler_lib
+                    logging_buffer_lib
                     Boost::system 
                     Boost::log_setup 
                     Boost::log
@@ -139,6 +152,7 @@ target_link_libraries(echo_handler_lib
 
 target_link_libraries(health_handler_lib
                     request_handler_lib
+                    logging_buffer_lib
                     Boost::system 
                     Boost::log_setup 
                     Boost::log
@@ -146,6 +160,7 @@ target_link_libraries(health_handler_lib
 
 target_link_libraries(sleep_handler_lib
                     request_handler_lib
+                    logging_buffer_lib
                     Boost::system 
                     Boost::log_setup 
                     Boost::log
@@ -153,6 +168,7 @@ target_link_libraries(sleep_handler_lib
 
 target_link_libraries(request_handler_lib
                     config_interpreter_lib
+                    logging_buffer_lib
                     Boost::system 
                     Boost::log_setup 
                     Boost::log
@@ -167,6 +183,7 @@ target_link_libraries(request_dispatcher_lib
                     sleep_handler_lib
                     crud_handler_lib
                     not_found_handler_lib
+                    logging_buffer_lib 
                     Boost::system 
                     Boost::log_setup 
                     Boost::log
@@ -176,6 +193,7 @@ target_link_libraries(session_lib
                     config_interpreter_lib
                     request_handler_lib
                     request_dispatcher_lib
+                    logging_buffer_lib 
                     Boost::system 
                     Boost::log_setup 
                     Boost::log
@@ -185,6 +203,7 @@ target_link_libraries(server_lib
                     logger_lib
                     session_lib
                     config_interpreter_lib
+                    logging_buffer_lib
                     Boost::system 
                     Boost::log_setup 
                     Boost::log
@@ -219,19 +238,19 @@ add_executable(config_parser_test tests/config_parser_test.cc)
 target_link_libraries(config_parser_test config_parser_lib config_interpreter_lib logger_lib Boost::log_setup Boost::log gtest_main)
 
 add_executable(echo_handler_test tests/echo_handler_test.cc)
-target_link_libraries(echo_handler_test echo_handler_lib gtest_main)
+target_link_libraries(echo_handler_test echo_handler_lib logging_buffer_lib gtest_main)
 
 add_executable(server_test tests/server_test.cc)
 target_link_libraries(server_test server_lib gtest_main)
 
 add_executable(not_found_handler_test tests/not_found_handler_test.cc)
-target_link_libraries(not_found_handler_test not_found_handler_lib gtest_main)
+target_link_libraries(not_found_handler_test not_found_handler_lib logging_buffer_lib gtest_main)
 
 add_executable(health_handler_test tests/health_handler_test.cc)
-target_link_libraries(health_handler_test health_handler_lib gtest_main)
+target_link_libraries(health_handler_test health_handler_lib logging_buffer_lib gtest_main)
 
 add_executable(session_test tests/session_test.cc)
-target_link_libraries(session_test session_lib request_dispatcher_lib request_handler_lib not_found_handler_lib echo_handler_lib static_handler_lib logger_lib Boost::log_setup Boost::log gtest_main)
+target_link_libraries(session_test session_lib logging_buffer_lib request_dispatcher_lib request_handler_lib not_found_handler_lib echo_handler_lib static_handler_lib logger_lib Boost::log_setup Boost::log gtest_main)
 
 add_executable(signal_handler_test tests/signal_handler_test.cc)
 target_link_libraries(signal_handler_test signal_handler_lib gtest_main Boost::log_setup Boost::log)
@@ -240,11 +259,12 @@ add_executable(logger_test tests/logger_test.cc)
 target_link_libraries(logger_test logger_lib gtest_main Boost::log_setup Boost::log)
 
 add_executable(request_dispatcher_test tests/request_dispatcher_test.cc)
-target_link_libraries(request_dispatcher_test request_dispatcher_lib config_interpreter_lib Boost::log_setup Boost::log gtest_main)
+target_link_libraries(request_dispatcher_test request_dispatcher_lib logging_buffer_lib config_interpreter_lib Boost::log_setup Boost::log gtest_main)
 
 add_executable(static_handler_test tests/static_handler_test.cc)
 target_link_libraries(static_handler_test
                       static_handler_lib
+                      logging_buffer_lib
                       gtest_main
                       Boost::system
                       Boost::log_setup
@@ -253,6 +273,7 @@ target_link_libraries(static_handler_test
 add_executable(crud_handler_test tests/crud_handler_test.cc)
 target_link_libraries(crud_handler_test
                       crud_handler_lib
+                      logging_buffer_lib
                       gtest_main
                       Boost::system
                       Boost::log_setup
@@ -262,13 +283,17 @@ add_executable(crud_file_manager_test tests/crud_file_manager_test.cc)
 target_link_libraries(crud_file_manager_test
                       crud_file_manager_lib
                       crud_handler_lib
+                      logging_buffer_lib
                       gtest_main
                       Boost::system
                       Boost::log_setup
                       Boost::log)
 
 add_executable(registry_test tests/registry_test.cc)
-target_link_libraries(registry_test registry_lib echo_handler_lib static_handler_lib not_found_handler_lib gtest_main)
+target_link_libraries(registry_test registry_lib logging_buffer_lib echo_handler_lib static_handler_lib not_found_handler_lib gtest_main)
+
+add_executable(logging_buffer_test tests/logging_buffer_test.cc)
+target_link_libraries(logging_buffer_test logging_buffer_lib gtest_main)
 
 # Add Integration Tests
 if (NOT CMAKE_BUILD_TYPE STREQUAL Coverage)
@@ -303,7 +328,7 @@ gtest_discover_tests(crud_handler_test WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_
 gtest_discover_tests(crud_file_manager_test WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tests)
 gtest_discover_tests(registry_test WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tests)
 gtest_discover_tests(server_test WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tests)
-
+gtest_discover_tests(logging_buffer_test WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tests)
 
 
 
@@ -325,6 +350,7 @@ generate_coverage_report(TARGETS
                             crud_handler_lib 
                             crud_file_manager_lib
                             registry_lib 
+                            logging_buffer_lib
                         TESTS 
                             config_parser_test
                             config_interpreter_test
@@ -339,4 +365,5 @@ generate_coverage_report(TARGETS
                             static_handler_test 
                             crud_handler_test 
                             crud_file_manager_test 
-                            registry_test)
+                            registry_test
+                            logging_buffer_test)

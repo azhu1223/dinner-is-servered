@@ -12,7 +12,8 @@
 #include "crud_handler.h"
 #include "health_handler.h"
 #include "sleep_handler.h"
-
+#include "logging_buffer.h"
+#include <queue>
 
 int main(int argc, char* argv[]) {
     try {
@@ -31,6 +32,11 @@ int main(int argc, char* argv[]) {
 
         //Intialize termination signal handler
         signal (SIGINT, sig_handler);
+
+        std::queue<BufferEntry> buffer1;
+        std::queue<BufferEntry> buffer2;
+
+        LoggingBuffer logging_buffer(&buffer1, &buffer2);
 
         //Register request handlers
         Registry::RegisterRequestHandler(Echo, EchoHandlerFactory::create);
@@ -54,7 +60,7 @@ int main(int argc, char* argv[]) {
         ConfigInterpreter::setServerPaths(config);
 
 
-        server s(io_service, ConfigInterpreter::getPort(config));
+        server s(io_service, &logging_buffer, ConfigInterpreter::getPort(config));
 
         s.run();
     } catch (const std::exception& e) {

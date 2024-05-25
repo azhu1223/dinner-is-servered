@@ -1,16 +1,18 @@
 #include "crud_file_manager.h"
 #include "crud_handler.h"
+#include "logging_buffer.h"
 #include <filesystem>
 #include <fstream>
 #include <string>
-#include <boost/log/trivial.hpp>
 #include <mutex>
+
+CrudFileManager::CrudFileManager(LoggingBuffer* logging_buffer) : logging_buffer_(logging_buffer) {}
 
 bool CrudFileManager::readObject(CrudPath path, std::string& json) {
   std::string file_path = path.data_path + "/" + path.entity_name + "/" + path.entity_id;
   std::ifstream file(file_path, std::ios::in | std::ios::binary); 
   if (!file.is_open()) {
-    BOOST_LOG_TRIVIAL(info) << "unable to open file " << file_path;
+    logging_buffer_->addToBuffer(ERROR, "unable to open file " + file_path);
     return false;
   }
   
@@ -20,7 +22,7 @@ bool CrudFileManager::readObject(CrudPath path, std::string& json) {
   json = object;
 
   file.close();
-  BOOST_LOG_TRIVIAL(info) << "found read success: " << file_path;
+  logging_buffer_->addToBuffer(INFO, "found read success: " + file_path);
   return true;
 }
 
@@ -28,16 +30,16 @@ bool CrudFileManager::writeObject(CrudPath path, std::string json) {
   std::string directory = path.data_path + "/" + path.entity_name;
   if (!std::filesystem::exists(directory)) {
     try {
-      BOOST_LOG_TRIVIAL(info) << "directory " << directory << " missing, attempting to create";
+      logging_buffer_->addToBuffer(INFO, "directory " + directory + " missing, attempting to create");
       writeEntityId(path, 1);
       std::filesystem::create_directories(directory);
     } catch (std::filesystem::filesystem_error const& ex) {
-      BOOST_LOG_TRIVIAL(error) << "error creating directory " << directory << " for CRUD request";
+      logging_buffer_->addToBuffer(ERROR, "error creating directory " + directory + " for CRUD request");
     }
   }
 
   std::string file_path = path.data_path + "/" + path.entity_name + "/" + path.entity_id;
-  BOOST_LOG_TRIVIAL(info) << "creating Entity " << path.entity_name << " at path " << file_path;
+  logging_buffer_->addToBuffer(INFO, "creating Entity " + path.entity_name + " at path " + file_path);
   if (path.entity_id != "" && (std::stoull(path.entity_id) >= std::stoull(generateEntityId(path)))) {
     writeEntityId(path, std::stoull(path.entity_id));
   }
@@ -49,7 +51,7 @@ bool CrudFileManager::writeObject(CrudPath path, std::string json) {
 
   file << json;
   file.close();
-  BOOST_LOG_TRIVIAL(info) << "file creation success";
+  logging_buffer_->addToBuffer(INFO, "file creation success");
 
   return true;
 }
@@ -59,7 +61,7 @@ bool CrudFileManager::deleteObject(CrudPath path) {
   bool exists = existsObject(path); 
 
   if (!exists) {
-    BOOST_LOG_TRIVIAL(info) << "file doesn't exist: " << file_path;
+    logging_buffer_->addToBuffer(ERROR, "file doesn't exist: " + file_path);
     return false; // This object doesn't exist 
   }
 
@@ -91,7 +93,7 @@ std::vector<std::string> CrudFileManager::listObjects(CrudPath path) {
         }
     }
   } catch (const std::filesystem::filesystem_error& e) {
-      BOOST_LOG_TRIVIAL(error) << "Unable to read directory at: " << dir_path;
+      logging_buffer_->addToBuffer(ERROR, "Unable to read directory at: " + dir_path);
   }
 
   sort(file_names.begin(), file_names.end());
@@ -105,21 +107,21 @@ std::string CrudFileManager::generateEntityId(CrudPath path) {
   std::string directory = path.data_path;
   if (!std::filesystem::exists(directory)) {
     try {
-      BOOST_LOG_TRIVIAL(info) << "directory " << directory << " missing, attempting to create";
+      logging_buffer_->addToBuffer(INFO, "directory " + directory + " missing, attempting to create");
       std::filesystem::create_directories(directory);
     } catch (std::filesystem::filesystem_error const& ex) {
-      BOOST_LOG_TRIVIAL(error) << "error creating directory " << directory << " for CRUD request";
+      logging_buffer_->addToBuffer(INFO, "error creating directory " + directory + " for CRUD request");
     }
   }
 
   if (!std::filesystem::exists(max_entity_ids_file)) {
-    BOOST_LOG_TRIVIAL(info) << "Max file doesn't exist";
+    logging_buffer_->addToBuffer(INFO, "Max file doesn't exist");
     std::ofstream f(max_entity_ids_file);
     f.close();
   }
   std::fstream file(max_entity_ids_file);
   if (!file.is_open()) {
-    BOOST_LOG_TRIVIAL(error) << "Could not open " + max_entity_ids_file + " to get max entity IDs";
+    logging_buffer_->addToBuffer(ERROR, "Could not open " + max_entity_ids_file + " to get max entity IDs");
     entity_id_file_mutex.unlock();
     return "1";
   }
@@ -149,10 +151,10 @@ bool CrudFileManager::writeEntityId(CrudPath path, u_int64_t max_id) {
   // (1) When we are creating our first entity
   if (!std::filesystem::exists(path.data_path)) {
     try {
-      BOOST_LOG_TRIVIAL(info) << "directory " << path.data_path << " missing, attempting to create";
+      logging_buffer_->addToBuffer(INFO, "directory " + path.data_path + " missing, attempting to create");
       std::filesystem::create_directories(path.data_path);
     } catch (std::filesystem::filesystem_error const& ex) {
-      BOOST_LOG_TRIVIAL(error) << "error creating directory " << path.data_path << " for CRUD request";
+      logging_buffer_->addToBuffer(ERROR, "error creating directory " + path.data_path + " for CRUD request");
     }
   }
 
@@ -164,7 +166,7 @@ bool CrudFileManager::writeEntityId(CrudPath path, u_int64_t max_id) {
   if (!std::filesystem::exists(dir_path)) {
     std::ofstream file(max_entity_ids_file, std::ofstream::app);
     if (!file.is_open()) {
-      BOOST_LOG_TRIVIAL(error) << "Could not open " + max_entity_ids_file + " to write to it.";
+      logging_buffer_->addToBuffer(ERROR, "Could not open " + max_entity_ids_file + " to write to it.");
       entity_id_file_mutex.unlock();
       return false;
     }

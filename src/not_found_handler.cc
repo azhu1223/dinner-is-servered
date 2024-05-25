@@ -1,11 +1,12 @@
 #include "not_found_handler.h"
 #include "request_handler.h"
+#include "logging_buffer.h"
 #include <string>
 #include <boost/log/trivial.hpp>
 
 namespace http = boost::beast::http;
 
-NotFoundHandler::NotFoundHandler() : RequestHandler() {}
+NotFoundHandler::NotFoundHandler(LoggingBuffer* logging_buffer) : RequestHandler(), logging_buffer_(logging_buffer) {}
 
 http::response<http::vector_body<char>> NotFoundHandler::handle_request(const http::request<http::vector_body<char>>& req) {
     std::string response_body_string = "404 Not Found\r\n\r\n";
@@ -22,6 +23,6 @@ http::response<http::vector_body<char>> NotFoundHandler::handle_request(const ht
     return response;
 }
 
-RequestHandler* NotFoundHandlerFactory::create() {
-    return new NotFoundHandler();
+RequestHandler* NotFoundHandlerFactory::create(LoggingBuffer* logging_buffer) {
+    return new NotFoundHandler(logging_buffer);
 }

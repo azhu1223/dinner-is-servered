@@ -6,14 +6,22 @@
 #include <fstream>
 #include <filesystem>
 #include "config_interpreter.h"
+#include "logging_buffer.h"
+#include <queue>
 
 class CrudFileManagerTest : public ::testing::Test {
 protected:
+    std::queue<BufferEntry> q1;
+    std::queue<BufferEntry> q2;
+    LoggingBuffer* lb;
+
     void SetUp() override {
-        manager = new CrudFileManager();
+        lb = new LoggingBuffer(&q1, &q2);
+        manager = new CrudFileManager(lb);
     }
 
     void TearDown() override {
+        delete lb;
         delete manager;
     }
 
