@@ -257,7 +257,7 @@ std::string RequestDispatcher::request_type_tostr(RequestType request_type){
         case Sleep:
             return "Sleep";
         case None:
-            return "None";
+            return "Not Found";
         case BogusType:
             return "BogusType";
         default:
@@ -295,7 +295,8 @@ http::response<http::vector_body<char>> RequestDispatcher::dispatch_request(cons
         BOOST_LOG_TRIVIAL(info) << "[ResponseMetrics]" << "\t" 
                                 << "Request IP: " << socket.remote_endpoint(ec).address()  << "\t"
                                 << "Request Target: " << request.target() << "\t"
-                                << "Response Code: " << response.result() << "\t"
+                                << "Response Code: " << response.result_int() << "\t"
+                                << "Response Message: " << response.result() << "\t"
                                 << "Response Handler: " << RequestDispatcher::request_type_tostr(request_type);
 
         return response;
