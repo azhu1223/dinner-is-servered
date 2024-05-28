@@ -15,6 +15,8 @@
 #include "logging_buffer.h"
 #include <queue>
 
+#define THREADPOOL_SIZE 2
+
 int main(int argc, char* argv[]) {
     try {
         if ( !(argc ==2 || (argc==3 && std::string(argv[2]) == "--disable-file-logging") ) ) {
@@ -31,7 +33,7 @@ int main(int argc, char* argv[]) {
         initialize_logging(enable_file_logging);
 
         //Intialize termination signal handler
-        signal (SIGINT, sig_handler);
+        //signal (SIGINT, sig_handler);
 
         std::queue<BufferEntry> buffer1;
         std::queue<BufferEntry> buffer2;
@@ -60,7 +62,7 @@ int main(int argc, char* argv[]) {
         ConfigInterpreter::setServerPaths(config);
 
 
-        server s(io_service, &logging_buffer, ConfigInterpreter::getPort(config));
+        server s(io_service, &logging_buffer, THREADPOOL_SIZE, ConfigInterpreter::getPort(config));
 
         s.run();
     } catch (const std::exception& e) {

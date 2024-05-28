@@ -45,8 +45,7 @@ def main():
     if diff_process.returncode == 0:
         end_time = time.time()
         duration = end_time - start_time
-        # TODO Uncomment the line below once the multithreading is enabled
-        # assert duration < 1, f"The section did not complete within 1 second. Took {duration} seconds."
+        assert duration < 1, f"The section did not complete within 1 second. Took {duration} seconds."
         print(f"The section completed within 1 second. Took {duration} seconds.")
         return 0
     else:

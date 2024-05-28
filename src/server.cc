@@ -4,13 +4,32 @@
 #include <boost/asio.hpp>
 #include <boost/bind.hpp>
 #include <boost/log/trivial.hpp>
+#include <memory>
+#include <vector>
+#include <atomic>
+#include <thread>
 
-server::server(boost::asio::io_service& io_service, LoggingBuffer* logging_buffer, short port): io_service_(io_service),
+server::server(boost::asio::io_service& io_service, LoggingBuffer* logging_buffer, int threadpool_size, short port): io_service_(io_service),
     acceptor_(io_service, boost::asio::ip::tcp::endpoint(boost::asio::ip::tcp::v4(), port)),
+    program_terminated_(false),
     logging_buffer_(logging_buffer),
-    logging_thread_(&server::handle_logging, this)
+    logging_thread_(&server::handle_logging, this),
+    threadpool_size_(threadpool_size),
+    signals_(io_service_)
 {
-    BOOST_LOG_TRIVIAL(info) << "Starting server on port " << port;
+    signals_.add(SIGINT);
+    signals_.add(SIGTERM);
+
+    signals_.async_wait(boost::bind(&server::kill_server, this));
+    logging_buffer->addToBuffer(INFO, "Starting server on port " + port);
+
+    /*boost::asio::ip::tcp::resolver resolver(io_service_);
+    boost::asio::ip::tcp::resolver::query query(address, port);
+    boost::asio::ip::tcp::endpoint endpoint = *resolver.resolve(query);
+    acceptor_.open(endpoint.protocol());
+    acceptor_.set_option(boost::asio::ip::tcp::acceptor::reuse_address(true));
+    acceptor_.bind(endpoint);*/ 
+
     start_accept();
 }
 
@@ -37,12 +56,31 @@ void server::handle_accept(std::shared_ptr<session> new_session, const boost::sy
 }
 
 void server::run() {
-    BOOST_LOG_TRIVIAL(info) << "Running the server";
-    io_service_.run();
+    logging_buffer_->addToBuffer(INFO, "Running the server");
+
+    logging_buffer_->addToBuffer(INFO, "Creating threadpool");
+    for(int i = 0; i < threadpool_size_; i++) {
+        std::shared_ptr<std::thread> thread(new std::thread(
+            boost::bind(&boost::asio::io_service::run, &io_service_)));
+        threadpool_.push_back(thread);
+    }
+
+    logging_buffer_->addToBuffer(INFO, "Joining threadpool threads");
+    for (auto thread : threadpool_) {
+        thread->join();
+    }
 }
 
 void server::handle_logging() {
-    while (true) {
+    while (!program_terminated_.load() || !logging_buffer_->empty()) {
         logging_buffer_->writeToLog();
     }
+}
+
+bool server::kill_server() {
+    logging_buffer_->addToBuffer(INFO, "Recieved interupt signal. Terminating");
+
+    io_service_.stop();
+    program_terminated_.store(true);
+    logging_thread_.join();
 }

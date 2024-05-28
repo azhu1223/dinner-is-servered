@@ -23,6 +23,7 @@ class LoggingBuffer {
         LoggingBuffer(std::queue<BufferEntry>* buffer1, std::queue<BufferEntry>* buffer2);
         bool addToBuffer(LogSeverity severity, std::string message);
         bool writeToLog();
+        bool empty();
     private:
         std::queue<BufferEntry>* available_buffer_;
 

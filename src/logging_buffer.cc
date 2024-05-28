@@ -21,7 +21,7 @@ bool LoggingBuffer::addToBuffer(LogSeverity severity, std::string message) {
 
 bool LoggingBuffer::writeToLog() {
     if (!available_buffer_->empty()) {
-        std::queue<std::pair<LogSeverity, std::string>>* queue = available_buffer_;
+        std::queue<BufferEntry>* queue = available_buffer_;
 
         // Switch the queue available to be written to allow other threads to buffer log 
         // messages while this thread logs all previously buffered messages.
@@ -41,18 +41,18 @@ bool LoggingBuffer::writeToLog() {
         lock.unlock();
 
         while(!queue->empty()) {
-            std::pair<LogSeverity, std::string>* top = &queue->front();
+            BufferEntry top = queue->front();
             queue->pop();
 
-            switch(top->first) {
+            switch(top.first) {
                 case INFO:
-                    BOOST_LOG_TRIVIAL(info) << top->second;
+                    BOOST_LOG_TRIVIAL(info) << top.second;
                     break;
                 case ERROR:
-                    BOOST_LOG_TRIVIAL(error) << top->second;
+                    BOOST_LOG_TRIVIAL(error) << top.second;
                     break;
                 case FATAL:
-                    BOOST_LOG_TRIVIAL(fatal) << top->second;
+                    BOOST_LOG_TRIVIAL(fatal) << top.second;
                     break;
             }
         }
@@ -64,4 +64,8 @@ bool LoggingBuffer::writeToLog() {
     }
 
     return true;
+}
+
+bool LoggingBuffer::empty() {
+    return buffer1_->empty() && buffer2_->empty();
 }
