@@ -3,6 +3,25 @@
 #include "config_interpreter.h"
 #include "logging_buffer.h"
 #include <queue>
+#include <boost/asio/ip/tcp.hpp>
+#include <boost/beast/http.hpp>
+#include <gmock/gmock.h>
+
+namespace http = boost::beast::http;
+using namespace testing;
+
+class MockSocket {
+public:
+    MockSocket(boost::asio::io_context& io_context) : endpoint(boost::asio::ip::make_address("127.0.0.1"), 8080) {}
+
+    boost::asio::ip::tcp::endpoint remote_endpoint(boost::system::error_code& ec) const {
+        ec = boost::system::error_code();
+        return endpoint;
+    }
+
+private:
+    boost::asio::ip::tcp::endpoint endpoint;
+};
 
 class DispatcherFixture : public ::testing::Test {
 protected:
@@ -10,6 +29,7 @@ protected:
     std::queue<BufferEntry> q1;
     std::queue<BufferEntry> q2;
     LoggingBuffer* lb;
+    boost::asio::io_context io_context;
 
     void SetUp() override {
         kServerPaths.echo_.push_back("/test/echo1");
@@ -19,7 +39,7 @@ protected:
         kServerPaths.static_["/staticroot"] = "/";
         ConfigInterpreter::setServerPaths(kServerPaths);
         
-        lb = new LoggingBuffer(&q1, &q2);
+        lb = new LoggingBuffer(&q1, &q2);        
     }
 
     void TearDown() override {

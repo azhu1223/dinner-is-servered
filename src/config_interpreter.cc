@@ -116,7 +116,7 @@ void ConfigInterpreter::setServerPaths(NginxConfig &config){
                         BOOST_LOG_TRIVIAL(info) << "Adding health path: " << location;
                         health_paths.push_back(location);
                     }
-                    //Health Handler
+                    //Sleep Handler
                     else if (location_type == "SleepHandler") {
                         BOOST_LOG_TRIVIAL(info) << "Adding sleep path: " << location;
                         sleep_paths.push_back(location);

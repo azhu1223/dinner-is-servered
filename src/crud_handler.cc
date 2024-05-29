@@ -246,11 +246,7 @@ http::response<http::vector_body<char>> CrudHandler::handle_request(const http::
       return handle_del(path, req);
     }
 
-
       logging_buffer_->addToBuffer(ERROR, "Should never reach here. All cases should be handled above");
-      std::vector<char> response_body_vector;;
-      response = http::response<http::vector_body<char>>(http::status::bad_request, 11U, response_body_vector);
-      response.prepare_payload();
       return response;
 }
 

@@ -267,3 +267,272 @@ TEST_F(NginxConfigInterpreterTest, RootSpecifiedTwice) {
         EXPECT_EQ(err.what(), std::string("Duplicate server file location"));
     }
 }
+
+
+TEST_F(NginxConfigInterpreterTest, CrudHandlerTest) {
+    config = new NginxConfig;
+    std::map<std::string, std::string> crud_paths_to_server_paths;
+    std::string location = "/api/crud";
+
+    // Mock a statement representing the configuration block
+    NginxConfigStatement* lv3statement = new NginxConfigStatement;
+    lv3statement->tokens_ = {"data_path", "/data/crud"};
+
+    NginxConfig* child_block = new NginxConfig;
+    child_block->statements_.emplace_back(lv3statement);
+
+    NginxConfigStatement* lv2Statement = new NginxConfigStatement;
+    lv2Statement->child_block_.reset(child_block);
+
+    bool found_server_file = false;
+    for (const auto& lv3statement : lv2Statement->child_block_->statements_) {
+        if (lv3statement->tokens_.at(0) == "data_path") {
+            if (found_server_file) {
+                BOOST_LOG_TRIVIAL(fatal) << "Duplicate server file location";
+                throw std::runtime_error("Duplicate server file location");
+            }
+            BOOST_LOG_TRIVIAL(info) << "Adding crud path: " << location << " mapping to server location " << lv3statement->tokens_.at(1);
+            crud_paths_to_server_paths[location] = lv3statement->tokens_.at(1);
+            found_server_file = true;
+        }
+    }
+
+    EXPECT_TRUE(found_server_file);
+    EXPECT_EQ(crud_paths_to_server_paths[location], "/data/crud");
+}
+
+TEST_F(NginxConfigInterpreterTest, DuplicateCrudHandlerTest) {
+    config = new NginxConfig;
+    std::map<std::string, std::string> crud_paths_to_server_paths;
+    std::string location = "/api/crud";
+
+    // Mock duplicate statements representing the configuration block
+    NginxConfigStatement* lv3statement1 = new NginxConfigStatement;
+    lv3statement1->tokens_ = {"data_path", "/data/crud"};
+
+    NginxConfigStatement* lv3statement2 = new NginxConfigStatement;
+    lv3statement2->tokens_ = {"data_path", "/data/crud"};
+
+    NginxConfig* child_block = new NginxConfig;
+    child_block->statements_.emplace_back(lv3statement1);
+    child_block->statements_.emplace_back(lv3statement2);
+
+    NginxConfigStatement* lv2Statement = new NginxConfigStatement;
+    lv2Statement->child_block_.reset(child_block);
+
+    bool found_server_file = false;
+    EXPECT_THROW({
+        for (const auto& lv3statement : lv2Statement->child_block_->statements_) {
+            if (lv3statement->tokens_.at(0) == "data_path") {
+                if (found_server_file) {
+                    BOOST_LOG_TRIVIAL(fatal) << "Duplicate server file location";
+                    throw std::runtime_error("Duplicate server file location");
+                }
+                BOOST_LOG_TRIVIAL(info) << "Adding crud path: " << location << " mapping to server location " << lv3statement->tokens_.at(1);
+                crud_paths_to_server_paths[location] = lv3statement->tokens_.at(1);
+                found_server_file = true;
+            }
+        }
+    }, std::runtime_error);
+}
+
+TEST_F(NginxConfigInterpreterTest, HealthHandlerTest) {
+    config = new NginxConfig;
+    std::vector<std::string> health_paths;
+    std::string location = "/api/health";
+
+    BOOST_LOG_TRIVIAL(info) << "Adding health path: " << location;
+    health_paths.push_back(location);
+
+    EXPECT_EQ(health_paths.size(), 1);
+    EXPECT_EQ(health_paths[0], location);
+}
+
+TEST_F(NginxConfigInterpreterTest, SleepHandlerTest) {
+    config = new NginxConfig;
+    std::vector<std::string> sleep_paths;
+    std::string location = "/api/sleep";
+
+    BOOST_LOG_TRIVIAL(info) << "Adding sleep path: " << location;
+    sleep_paths.push_back(location);
+
+    EXPECT_EQ(sleep_paths.size(), 1);
+    EXPECT_EQ(sleep_paths[0], location);
+}
+
+TEST_F(NginxConfigInterpreterTest, CrudHandlerFound) {
+  // Setup
+  config = new NginxConfig;
+  NginxConfigStatement* server_statement = new NginxConfigStatement;
+  config->statements_.emplace_back(server_statement);
+  server_statement->tokens_.emplace_back("server");
+
+  // Create server block
+  NginxConfig* server_config = new NginxConfig;
+  server_statement->child_block_.reset(server_config);
+
+  // Create CRUD location block with data_path
+  NginxConfigStatement* crud_location_statement = new NginxConfigStatement;
+  server_config->statements_.emplace_back(crud_location_statement);
+  crud_location_statement->tokens_.emplace_back("location");
+  crud_location_statement->tokens_.emplace_back("/api/data");
+  crud_location_statement->tokens_.emplace_back("CrudHandler");
+  NginxConfig* crud_location_config = new NginxConfig;
+  crud_location_statement->child_block_.reset(crud_location_config);
+  NginxConfigStatement* data_path_statement = new NginxConfigStatement;
+  crud_location_config->statements_.emplace_back(data_path_statement);
+  data_path_statement->tokens_.emplace_back("data_path");
+  data_path_statement->tokens_.emplace_back("/data/crud");
+
+  // Execution
+  ConfigInterpreter::setServerPaths(*config);
+  ServerPaths server_paths = ConfigInterpreter::getServerPaths();
+
+  // Assertion
+  EXPECT_EQ(server_paths.crud_.size(), 1);
+  EXPECT_EQ(server_paths.crud_["/api/data"], "/data/crud");
+}
+
+// Test for not finding a CRUD handler (no data_path)
+TEST_F(NginxConfigInterpreterTest, CrudHandlerNotFound) {
+  // Setup
+  config = new NginxConfig;
+  NginxConfigStatement* server_statement = new NginxConfigStatement;
+  config->statements_.emplace_back(server_statement);
+  server_statement->tokens_.emplace_back("server");
+
+  // Create server block
+  NginxConfig* server_config = new NginxConfig;
+  server_statement->child_block_.reset(server_config);
+
+  // Create location block with type CrudHandler but no data_path
+  NginxConfigStatement* crud_location_statement = new NginxConfigStatement;
+  server_config->statements_.emplace_back(crud_location_statement);
+  crud_location_statement->tokens_.emplace_back("location");
+  crud_location_statement->tokens_.emplace_back("/api/data");
+  crud_location_statement->tokens_.emplace_back("CrudHandler");
+  NginxConfig* crud_location_config = new NginxConfig;
+  crud_location_statement->child_block_.reset(crud_location_config);
+
+  // Execution
+  ConfigInterpreter::setServerPaths(*config);
+  ServerPaths server_paths = ConfigInterpreter::getServerPaths();
+
+  // Assertion
+  EXPECT_EQ(server_paths.crud_.size(), 0);
+}
+
+// Test for finding multiple CRUD handlers
+TEST_F(NginxConfigInterpreterTest, MultipleCrudHandlers) {
+  // Setup
+  config = new NginxConfig;
+  NginxConfigStatement* server_statement = new NginxConfigStatement;
+  config->statements_.emplace_back(server_statement);
+  server_statement->tokens_.emplace_back("server");
+
+  // Create server block
+  NginxConfig* server_config = new NginxConfig;
+  server_statement->child_block_.reset(server_config);
+
+  // Create first CRUD location block with data_path
+  NginxConfigStatement* crud_location_statement1 = new NginxConfigStatement;
+  server_config->statements_.emplace_back(crud_location_statement1);
+  crud_location_statement1->tokens_.emplace_back("location");
+  crud_location_statement1->tokens_.emplace_back("/api/data1");
+  crud_location_statement1->tokens_.emplace_back("CrudHandler");
+  NginxConfig* crud_location_config1 = new NginxConfig;
+  crud_location_statement1->child_block_.reset(crud_location_config1);
+  NginxConfigStatement* data_path_statement1 = new NginxConfigStatement;
+  crud_location_config1->statements_.emplace_back(data_path_statement1);
+  data_path_statement1->tokens_.emplace_back("data_path");
+  data_path_statement1->tokens_.emplace_back("/data/crud1");
+
+  // Create second CRUD location block with data_path
+  NginxConfigStatement* crud_location_statement2 = new NginxConfigStatement;
+  server_config->statements_.emplace_back(crud_location_statement2);
+  crud_location_statement2->tokens_.emplace_back("location");
+  crud_location_statement2->tokens_.emplace_back("/api/data2");
+  crud_location_statement2->tokens_.emplace_back("CrudHandler");
+  NginxConfig* crud_location_config2 = new NginxConfig;
+  crud_location_statement2->child_block_.reset(crud_location_config2);
+  NginxConfigStatement* data_path_statement2 = new NginxConfigStatement;
+  crud_location_config2->statements_.emplace_back(data_path_statement2);
+  data_path_statement2->tokens_.emplace_back("data_path");
+  data_path_statement2->tokens_.emplace_back("/data/crud2");
+
+  // Execution
+  ConfigInterpreter::setServerPaths(*config);
+  ServerPaths server_paths = ConfigInterpreter::getServerPaths();
+
+  // Assertion
+  EXPECT_EQ(server_paths.crud_.size(), 2);
+  EXPECT_EQ(server_paths.crud_["/api/data1"], "/data/crud1");
+  EXPECT_EQ(server_paths.crud_["/api/data2"], "/data/crud2");
+}
+
+
+// Test for finding multiple CRUD handlers, health handlers and sleep handlers
+TEST_F(NginxConfigInterpreterTest, MultipleHandlers) {
+  // Setup
+  config = new NginxConfig;
+  NginxConfigStatement* server_statement = new NginxConfigStatement;
+  config->statements_.emplace_back(server_statement);
+  server_statement->tokens_.emplace_back("server");
+
+  // Create server block
+  NginxConfig* server_config = new NginxConfig;
+  server_statement->child_block_.reset(server_config);
+
+  // Create first CRUD location block with data_path
+  NginxConfigStatement* crud_location_statement1 = new NginxConfigStatement;
+  server_config->statements_.emplace_back(crud_location_statement1);
+  crud_location_statement1->tokens_.emplace_back("location");
+  crud_location_statement1->tokens_.emplace_back("/api/data1");
+  crud_location_statement1->tokens_.emplace_back("CrudHandler");
+  NginxConfig* crud_location_config1 = new NginxConfig;
+  crud_location_statement1->child_block_.reset(crud_location_config1);
+  NginxConfigStatement* data_path_statement1 = new NginxConfigStatement;
+  crud_location_config1->statements_.emplace_back(data_path_statement1);
+  data_path_statement1->tokens_.emplace_back("data_path");
+  data_path_statement1->tokens_.emplace_back("/data/crud1");
+
+  // Create second CRUD location block with data_path
+  NginxConfigStatement* crud_location_statement2 = new NginxConfigStatement;
+  server_config->statements_.emplace_back(crud_location_statement2);
+  crud_location_statement2->tokens_.emplace_back("location");
+  crud_location_statement2->tokens_.emplace_back("/api/data2");
+  crud_location_statement2->tokens_.emplace_back("CrudHandler");
+  NginxConfig* crud_location_config2 = new NginxConfig;
+  crud_location_statement2->child_block_.reset(crud_location_config2);
+  NginxConfigStatement* data_path_statement2 = new NginxConfigStatement;
+  crud_location_config2->statements_.emplace_back(data_path_statement2);
+  data_path_statement2->tokens_.emplace_back("data_path");
+  data_path_statement2->tokens_.emplace_back("/data/crud2");
+
+  // Create Health Handler location
+  NginxConfigStatement* health_location_statement = new NginxConfigStatement;
+  server_config->statements_.emplace_back(health_location_statement);
+  health_location_statement->tokens_.emplace_back("location");
+  health_location_statement->tokens_.emplace_back("/health");
+  health_location_statement->tokens_.emplace_back("HealthHandler");
+
+  // Create Sleep Handler location
+  NginxConfigStatement* sleep_location_statement = new NginxConfigStatement;
+  server_config->statements_.emplace_back(sleep_location_statement);
+  sleep_location_statement->tokens_.emplace_back("location");
+  sleep_location_statement->tokens_.emplace_back("/sleep");
+  sleep_location_statement->tokens_.emplace_back("SleepHandler");
+
+  // Execution
+  ConfigInterpreter::setServerPaths(*config);
+  ServerPaths server_paths = ConfigInterpreter::getServerPaths();
+
+  // Assertion
+  EXPECT_EQ(server_paths.crud_.size(), 2);
+  EXPECT_EQ(server_paths.crud_["/api/data1"], "/data/crud1");
+  EXPECT_EQ(server_paths.crud_["/api/data2"], "/data/crud2");
+  EXPECT_EQ(server_paths.health_.size(), 1);
+  EXPECT_EQ(server_paths.health_[0], "/health");
+  EXPECT_EQ(server_paths.sleep_.size(), 1);
+  EXPECT_EQ(server_paths.sleep_[0], "/sleep");
+}

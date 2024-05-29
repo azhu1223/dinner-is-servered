@@ -210,6 +210,8 @@ TEST_F(CrudHandlerTest, PutRequestFailTest_EmptyId) {
     ConfigInterpreter::setServerPaths(sp);
 
     // Trying with empty entity_id (/api/Books)
+
+
     std::string string_body = "{ \"data\": \"1\"}";
     std::vector<char> put_body(string_body.begin(),string_body.end());
     http::request<http::vector_body<char>> req;
@@ -547,4 +549,38 @@ TEST_F(CrudHandlerTest, BadRequestMethodTest) {
     http::response<http::vector_body<char>> response = handler->handle_request(req);
 
     EXPECT_EQ(response.result(), http::status::bad_request);
+}
+
+TEST_F(CrudHandlerTest, ListRequestEmptyEntityNameTest) {
+    std::vector<std::string> echo_paths;
+    std::map<std::string, std::string> static_paths;
+    std::map<std::string, std::string> crud_paths;
+    echo_paths.push_back("/echo1");
+    static_paths["/static"] = "./static";
+    crud_paths["/api"] = "./data";
+    ServerPaths sp;
+    sp.echo_ = echo_paths;
+    sp.static_ = static_paths;
+    sp.crud_ = crud_paths;
+    ConfigInterpreter::setServerPaths(sp);
+
+    // Call the list GET request with an empty entity_name
+    std::string string_body = "";
+    std::vector<char> list_body(string_body.begin(), string_body.end());
+    http::request<http::vector_body<char>> list_request;
+    list_request.method(http::verb::get);
+    list_request.target("/api/");
+    list_request.version(11);
+    list_request.body() = list_body;
+    list_request.prepare_payload();
+
+    std::shared_ptr<CrudFileManager> manager = std::make_shared<FakeCrudFileManager>(lb);
+    CrudHandler handler(manager, lb);
+    http::response<http::vector_body<char>> response = handler.handle_request(list_request);
+    EXPECT_EQ(response.result(), http::status::bad_request);
+
+    std::string response_str(response.body().data(), response.body().size());
+    EXPECT_EQ(response_str, "400 Bad Request\r\nRequest must contain Entity name \r\n\r\n");
+
+    int deleted = std::filesystem::remove_all(crud_paths["/api"]);
 }
