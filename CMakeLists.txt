@@ -249,6 +249,9 @@ target_link_libraries(not_found_handler_test not_found_handler_lib logging_buffe
 add_executable(health_handler_test tests/health_handler_test.cc)
 target_link_libraries(health_handler_test health_handler_lib logging_buffer_lib gtest_main)
 
+add_executable(sleep_handler_test tests/sleep_handler_test.cc)
+target_link_libraries(sleep_handler_test sleep_handler_lib logging_buffer_lib  Boost::log_setup Boost::log gtest_main)
+
 add_executable(session_test tests/session_test.cc)
 target_link_libraries(session_test session_lib logging_buffer_lib request_dispatcher_lib request_handler_lib not_found_handler_lib echo_handler_lib static_handler_lib logger_lib Boost::log_setup Boost::log gtest_main)
 
@@ -329,6 +332,7 @@ gtest_discover_tests(crud_file_manager_test WORKING_DIRECTORY ${CMAKE_CURRENT_SO
 gtest_discover_tests(registry_test WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tests)
 gtest_discover_tests(server_test WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tests)
 gtest_discover_tests(logging_buffer_test WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tests)
+gtest_discover_tests(sleep_handler_test WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tests)
 
 
 
@@ -361,6 +365,7 @@ generate_coverage_report(TARGETS
                             signal_handler_test 
                             logger_test 
                             health_handler_test
+                            sleep_handler_test
                             request_dispatcher_test 
                             static_handler_test 
                             crud_handler_test 

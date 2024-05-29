@@ -24,7 +24,7 @@ TEST(HealthHandlerTest, Factory) {
     std::queue<BufferEntry> q2;
     LoggingBuffer* lb;
 
-    auto factory_genereated_handler = HealthHandlerFactory::create(lb);
+    auto factory_generated_handler = HealthHandlerFactory::create(lb);
 
-    EXPECT_TRUE(factory_genereated_handler != nullptr);
+    EXPECT_TRUE(factory_generated_handler != nullptr);
 }
