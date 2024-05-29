@@ -19,6 +19,8 @@ FROM ubuntu:jammy as deploy
 COPY --from=builder /usr/src/project/build/bin/server ./bin
 COPY --from=builder /usr/src/project/confs/cloud_config .
 COPY --from=builder /usr/src/project/resources ./resources
+COPY --from=builder /usr/src/project/app_pages ./app_pages
+
 
 
 EXPOSE 80

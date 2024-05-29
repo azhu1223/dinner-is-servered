@@ -30,12 +30,18 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
 # Specify the source directory of your resources folder
 set(RESOURCES_DIR ${CMAKE_CURRENT_SOURCE_DIR}/resources)
+set(APP_PAGES_DIR ${CMAKE_CURRENT_SOURCE_DIR}/app_pages)
+
 
 # Specify the destination directory in the build directory
 set(RESOURCES_DEST ${CMAKE_CURRENT_BINARY_DIR})
+set(APP_PAGES_DEST ${CMAKE_CURRENT_BINARY_DIR})
+
 
 # Copy the resources folder to the build directory during the build process
 file(COPY ${RESOURCES_DIR} DESTINATION ${RESOURCES_DEST})
+file(COPY ${APP_PAGES_DIR} DESTINATION ${APP_PAGES_DEST})
+
 
 # Enable cmake testing
 include(CTest)
