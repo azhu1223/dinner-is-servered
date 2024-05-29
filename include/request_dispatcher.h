@@ -19,6 +19,7 @@ enum RequestType {
     CRUD,
     Health,
     Sleep,
+    App,
     BogusType // Just for testing purposes, no functional relevance.
 };
 

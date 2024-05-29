@@ -12,6 +12,8 @@
 #include "crud_handler.h"
 #include "health_handler.h"
 #include "sleep_handler.h"
+#include "app_handler.h"
+
 #include "logging_buffer.h"
 #include <queue>
 
@@ -47,6 +49,8 @@ int main(int argc, char* argv[]) {
         Registry::RegisterRequestHandler(CRUD, CrudHandlerFactory::create);
         Registry::RegisterRequestHandler(Health, HealthHandlerFactory::create);
         Registry::RegisterRequestHandler(Sleep, SleepHandlerFactory::create);
+        Registry::RegisterRequestHandler(App, AppHandlerFactory::create);
+
 
 
         

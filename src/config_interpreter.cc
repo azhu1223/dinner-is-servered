@@ -54,6 +54,7 @@ void ConfigInterpreter::setServerPaths(NginxConfig &config){
     std::set<std::string> used_locations;
     std::vector<std::string> health_paths;
     std::vector<std::string> sleep_paths;
+    std::vector<std::string> app_paths;
 
 
 
@@ -121,6 +122,11 @@ void ConfigInterpreter::setServerPaths(NginxConfig &config){
                         BOOST_LOG_TRIVIAL(info) << "Adding sleep path: " << location;
                         sleep_paths.push_back(location);
                     }
+                    //Sleep Handler
+                    else if (location_type == "AppHandler") {
+                        BOOST_LOG_TRIVIAL(info) << "Adding app path: " << location;
+                        app_paths.push_back(location);
+                    }
                 }
             }
         }
@@ -132,6 +138,8 @@ void ConfigInterpreter::setServerPaths(NginxConfig &config){
     paths.crud_ = crud_paths_to_server_paths;
     paths.health_ = health_paths;
     paths.sleep_ = sleep_paths;
+    paths.app_ = app_paths;
+
 
 
 

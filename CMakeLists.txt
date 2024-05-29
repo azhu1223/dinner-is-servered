@@ -71,6 +71,8 @@ add_library(registry_lib src/registry.cc)
 add_library(health_handler_lib src/health_handler.cc)
 add_library(sleep_handler_lib src/sleep_handler.cc)
 add_library(logging_buffer_lib src/logging_buffer.cc)
+add_library(app_handler_lib src/app_handler.cc)
+
 
 
 
@@ -158,6 +160,14 @@ target_link_libraries(health_handler_lib
                     Boost::log
                     )
 
+target_link_libraries(app_handler_lib
+                    request_handler_lib
+                    logging_buffer_lib
+                    Boost::system 
+                    Boost::log_setup 
+                    Boost::log
+                    )
+
 target_link_libraries(sleep_handler_lib
                     request_handler_lib
                     logging_buffer_lib
@@ -181,6 +191,7 @@ target_link_libraries(request_dispatcher_lib
                     static_handler_lib
                     health_handler_lib
                     sleep_handler_lib
+                    app_handler_lib
                     crud_handler_lib
                     not_found_handler_lib
                     logging_buffer_lib 

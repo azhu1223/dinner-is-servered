@@ -94,6 +94,13 @@ RequestType RequestDispatcher::getRequestType(const http::request<http::vector_b
             request_type = Sleep;
         }
     }
+    for (auto path : server_paths.app_){
+        if(result.find(path) == 0 && path.length() > longest_size){
+            longest_size = path.length();
+            longest_path = path;
+            request_type = App;
+        }
+    }
 
     if (request_type == None){
         logging_buffer->addToBuffer(ERROR, "There was no matching path found for the request. 404 Handler should be invoked");
@@ -263,6 +270,8 @@ std::string RequestDispatcher::request_type_tostr(RequestType request_type, Logg
             return "Not Found";
         case BogusType:
             return "BogusType";
+        case App:
+            return "App";
         default:
             return "Unknown";
     }
