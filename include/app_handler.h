@@ -13,6 +13,8 @@ class AppHandler : public RequestHandler {
         AppHandler(LoggingBuffer* logging_buffer);
         virtual http::response<http::vector_body<char>> handle_request(const http::request<http::vector_body<char>>& req);
         http::response<http::vector_body<char>> generate_landing_page();
+        http::response<http::vector_body<char>> process_post(const http::request<http::vector_body<char>>& req);
+
     private:
         LoggingBuffer* logging_buffer_;
 };
