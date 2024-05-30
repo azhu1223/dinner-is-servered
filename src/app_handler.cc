@@ -15,7 +15,7 @@ http::response<http::vector_body<char>> AppHandler::handle_request(const http::r
     if (req.method() == http::verb::post) {
       return process_post(req);
     } else if (req.method() == http::verb::get) {
-      return generate_landding_page ();;
+      return generate_landing_page ();;
     } else {
         std::vector<char> body;
         http::response<http::vector_body<char>> response = http::response<http::vector_body<char>>(http::status::bad_request, 11U, body);
