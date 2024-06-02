@@ -4,171 +4,37 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>All For the Gram</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            background-color: #f0f0f0;
-        }
-        .container {
-            background-color: #fff;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-            width: 90%;
-            max-width: 500px;
-            box-sizing: border-box;
-        }
-        h1 {
-            text-align: center;
-            margin-bottom: 10px;
-        }
-        .description {
-            text-align: center;
-            margin-bottom: 20px;
-        }
-        .form-group {
-            margin-bottom: 15px;
-        }
-        label {
-            display: block;
-            margin-bottom: 5px;
-        }
-        input[type="text"], input[type="file"], input[type="submit"], textarea {
-            width: 100%;
-            padding: 10px;
-            margin: 5px 0 10px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            box-sizing: border-box;
-        }
-        input[type="submit"] {
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            cursor: pointer;
-        }
-        input[type="submit"]:hover {
-            background-color: #45a049;
-        }
-        input[type="submit"]:disabled {
-            background-color: #ccc;
-            cursor: not-allowed;
-        }
-        textarea {
-            resize: vertical;
-            height: 100px;
-        }
-        .loading {
-            text-align: center;
-            margin-top: 20px;
-        }
-        .response {
-            text-align: center;
-            margin-top: 20px;
-        }
-    </style>
+    <link rel="stylesheet" href="/app/styles.css">
 </head>
 <body>
-
-<div class="container">
-    <h1>All For the Gram</h1>
-    <div class="description">
-        Trying to decide what photo to post and what to caption it for Instagram? 
-        Please upload your images and provide any relevant information. We will pick 
-        the best photo for you to use and generate the Top 3 captions for the picture. 
-        Get those likes!
+    <div class="container">
+        <h1>All For the Gram</h1>
+        <div class="description">
+            Trying to decide what photo to post and what to caption it for Instagram? 
+            Please upload your images and provide any relevant information. We will pick 
+            the best photo for you to use and generate the Top 3 captions for the picture. 
+            Get those likes!
+        </div>
+        <form id="gram-form">
+            <div class="form-group">
+                <label for="file-upload">Upload Images:</label>
+                <input type="file" id="file-upload" name="file-upload" accept="image/*" multiple>
+            </div>
+            <div class="form-group">
+                <label for="relevant-info">Relevant Information:</label>
+                <textarea id="relevant-info" name="relevant-info" placeholder="Enter relevant information"></textarea>
+            </div>
+            <div class="form-group">
+                <input type="submit" value="Submit" id="submit-button">
+            </div>
+            <div class="loading" id="loading" style="display: none;">
+                Submitting... Please wait.
+            </div>
+        </form>
+        <div class="response" id="response" style="display: none;">
+            <!-- Response will be displayed here -->
+        </div>
     </div>
-    <form id="gram-form">
-        <div class="form-group">
-            <label for="file-upload">Upload Images:</label>
-            <input type="file" id="file-upload" name="file-upload" accept="image/*" multiple>
-        </div>
-        <div class="form-group">
-            <label for="relevant-info">Relevant Information:</label>
-            <textarea id="relevant-info" name="relevant-info" placeholder="Enter relevant information"></textarea>
-        </div>
-        <div class="form-group">
-            <input type="submit" value="Submit" id="submit-button">
-        </div>
-        <div class="loading" id="loading" style="display: none;">
-            Submitting... Please wait.
-        </div>
-    </form>
-    <div class="response" id="response" style="display: none;">
-        <!-- Response will be displayed here -->
-    </div>
-</div>
-
-<script>
-    document.getElementById('gram-form').addEventListener('submit', function(event) {
-        event.preventDefault(); // Prevent the default form submission behavior
-
-        // Show loading message and disable submit button
-        document.getElementById('loading').style.display = 'block';
-        const submitButton = document.getElementById('submit-button');
-        submitButton.disabled = true;
-
-        // Create a FormData object
-        const formData = new FormData();
-
-        // Get the files and append them to the FormData object
-        const files = document.getElementById('file-upload').files;
-        for (let i = 0; i < files.length; i++) {
-            formData.append('file-upload', files[i]);
-        }
-
-        // Get the relevant information and append it to the FormData object
-        const relevantInfo = document.getElementById('relevant-info').value;
-        formData.append('relevant-info', relevantInfo);
-
-        // Send a POST request with the form data
-        fetch('/app', {
-            method: 'POST',
-            body: formData
-        })
-        .then(response => response)
-        .then(data => {
-            console.log('Success:', data);
-
-            // Hide loading message
-            document.getElementById('loading').style.display = 'none';
-
-            // Display response
-            const responseDiv = document.getElementById('response');
-            responseDiv.style.display = 'block';
-            responseDiv.innerHTML = `
-                <h2>Response Received</h2>
-                <pre>${JSON.stringify(data, null, 2)}</pre>
-            `;
-
-            // Enable the submit button
-            submitButton.disabled = false;
-        })
-        .catch((error) => {
-            console.error('Error:', error);
-
-            // Hide loading message
-            document.getElementById('loading').style.display = 'none';
-
-            // Display error message
-            const responseDiv = document.getElementById('response');
-            responseDiv.style.display = 'block';
-            responseDiv.innerHTML = `
-                <h2>Error</h2>
-                <p>There was an error submitting the form. Please try again.</p>
-            `;
-
-            // Enable the submit button
-            submitButton.disabled = false;
-        });
-    });
-</script>
-
+    <script src="/app/landing_page.js"></script>
 </body>
 </html>
