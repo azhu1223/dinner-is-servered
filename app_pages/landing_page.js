@@ -24,8 +24,14 @@ document.getElementById('gram-form').addEventListener('submit', function(event) 
         method: 'POST',
         body: formData
     })
-    .then(data => {
-        console.log('Success:', data);
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        return response.text(); // Convert the response to plain text
+    })
+    .then(text => {
+        console.log('Success:', text);
 
         // Hide loading message
         document.getElementById('loading').style.display = 'none';
@@ -35,7 +41,7 @@ document.getElementById('gram-form').addEventListener('submit', function(event) 
         responseDiv.style.display = 'block';
         responseDiv.innerHTML = `
             <h2>Response Received</h2>
-            <pre>${JSON.stringify(data, null, 2)}</pre>
+            <pre>${text}</pre>
         `;
 
         // Enable the submit button
@@ -58,4 +64,5 @@ document.getElementById('gram-form').addEventListener('submit', function(event) 
         // Enable the submit button
         submitButton.disabled = false;
     });
+
 });
