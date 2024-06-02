@@ -47,6 +47,7 @@ bool session::handle_write(const boost::system::error_code& error) {
         logging_buffer_->addToBuffer(ERROR, "handle_write: Transport endpoint is not connected");
     }
     if (!error) {
+        request_ = {};
         http::async_read(socket_, 
             buff_, 
             request_, 
