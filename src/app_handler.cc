@@ -26,10 +26,18 @@ http::response<http::vector_body<char>> AppHandler::handle_request(const http::r
 }
 
 http::response<http::vector_body<char>> AppHandler::process_post(const http::request<http::vector_body<char>>& req){
-    
-    std::string dummy_response_string = "Response Processed";
-    std::vector<char> response_body_vector(dummy_response_string.begin(), dummy_response_string.end());
-    
+
+    //Parse the relevant info and images
+    std::string relevant_info = get_relevant_information(std::string(req.body().begin(), req.body().end()));
+    std::vector<std::string> image_data = get_images(std::string(req.body().begin(), req.body().end()));
+
+    //Choose best image and generate caption
+    int best_image_index = get_best_image_index(image_data);
+    std::string caption = generate_caption(image_data[best_image_index], relevant_info);
+
+
+    std::vector<char> response_body_vector =std::vector<char>(caption.begin(), caption.end());
+
     auto response = http::response<http::vector_body<char>>(http::status::ok, 11U, response_body_vector);
 
     response.set(http::field::content_type, "text/plain");
@@ -44,6 +52,53 @@ http::response<http::vector_body<char>> AppHandler::process_post(const http::req
     return response;
 }
 
+int AppHandler::get_best_image_index(const std::vector<std::string>& image_data){
+    //TODO Implement this function
+    return 0;
+}
+
+std::string AppHandler::generate_caption(const std::string& image, const std::string& relevant_info){
+    //TODO Implement this function
+    return "dummy caption";
+}
+
+
+std::string AppHandler::get_relevant_information(const std::string& body){
+    std::string target = "Content-Disposition: form-data; name=\"relevant-info\"\r\n\r\n";
+    int index = body.find(target) + target.length();
+    std::string relevant_info = body.substr(index, body.find("\r\n", index) - index);
+    return relevant_info;
+}
+
+std::vector<std::string> AppHandler::get_images(std::string body){
+
+    //Determine the number of images
+    std::string target = "Content-Disposition: form-data; name=\"number-of-images\"\r\n\r\n";
+    int index = body.find(target) + target.length();
+    int number_of_images = std::stoi(body.substr(index, body.find("\r\n", index) - index));
+
+    //Determine the image data
+    std::vector <std::string > images;
+
+    for (int i=0; i<number_of_images; i++){
+        //Find the satrting point
+        target = "Content-Disposition: form-data; name=\"file-upload\"";
+        index = body.find(target) + target.length();
+        index = body.find("\r\n", index) + 2;
+        index = body.find("\r\n", index) + 2;
+        index = body.find("\r\n", index) + 2;
+
+        //Add the image data to the vector
+        std::string image = body.substr(index, body.find("\r\n------WebKitFormBoundary", index) - index);
+        images.push_back(image);
+
+        //Update the body
+        body = body.substr(body.find("\r\n", index) + 2);
+
+    }
+
+    return images;
+}
 
 http::response<http::vector_body<char>> AppHandler::generate_landing_page(const http::request<http::vector_body<char>>& req){
     http::response<http::vector_body<char>> response;

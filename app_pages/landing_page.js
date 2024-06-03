@@ -15,6 +15,9 @@ document.getElementById('gram-form').addEventListener('submit', function(event) 
         formData.append('file-upload', files[i]);
     }
 
+    //Append the number of images
+    formData.append('number-of-images', files.length);
+
     // Get the relevant information and append it to the FormData object
     const relevantInfo = document.getElementById('relevant-info').value;
     formData.append('relevant-info', relevantInfo);
