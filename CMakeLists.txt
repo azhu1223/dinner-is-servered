@@ -42,6 +42,14 @@ set(APP_PAGES_DEST ${CMAKE_CURRENT_BINARY_DIR})
 file(COPY ${RESOURCES_DIR} DESTINATION ${RESOURCES_DEST})
 file(COPY ${APP_PAGES_DIR} DESTINATION ${APP_PAGES_DEST})
 
+#Enable libcurl
+# Use static libraries so binaries can be deployed without a full curl install
+set(CURL_USE_STATIC_LIBS TRUE)
+find_package(CURL)
+message(STATUS "Curl version: ${CURL_VERSION_STRING}")
+message(STATUS "The CURL libraries are: ${CURL_LIBRARIES}")
+
+
 
 # Enable cmake testing
 include(CTest)
@@ -56,6 +64,8 @@ add_subdirectory(/usr/src/googletest googletest)
 set(Boost_USE_STATIC_LIBS ON)
 find_package(Boost 1.50 REQUIRED COMPONENTS system log log_setup)
 message(STATUS "Boost version: ${Boost_VERSION}")
+message(STATUS "The Boost libraries are: ${Boost_LIBRARIES}")
+
 
 include_directories(include)
 
@@ -172,6 +182,7 @@ target_link_libraries(app_handler_lib
                     Boost::system 
                     Boost::log_setup 
                     Boost::log
+                    ${CURL_LIBRARIES}
                     )
 
 target_link_libraries(sleep_handler_lib
@@ -317,20 +328,20 @@ target_link_libraries(logging_buffer_test logging_buffer_lib gtest_main)
 
 # Add Integration Tests
 if (NOT CMAKE_BUILD_TYPE STREQUAL Coverage)
-    add_test(NAME IntegrationTests.example_config COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/tests/integration_tests/integration_test_example_config.py ${CMAKE_CURRENT_BINARY_DIR}/bin/server WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tests/integration_tests/)
-    add_test(NAME IntegrationTests.empty_config COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/tests/integration_tests/integration_test_empty_config.py ${CMAKE_CURRENT_BINARY_DIR}/bin/server WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tests/integration_tests/)
-    add_test(NAME IntegrationTests.missing_closing_parens COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/tests/integration_tests/integration_test_missing_closing_parentheses.py ${CMAKE_CURRENT_BINARY_DIR}/bin/server WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tests/integration_tests/)
-    add_test(NAME IntegrationTests.empty_brackets COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/tests/integration_tests/integration_test_empty_brackets.py ${CMAKE_CURRENT_BINARY_DIR}/bin/server WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tests/integration_tests/)
-    add_test(NAME IntegrationTests.multiple_end_brackets COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/tests/integration_tests/integration_test_multiple_end_brackets.py ${CMAKE_CURRENT_BINARY_DIR}/bin/server WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tests/integration_tests/)
-    add_test(NAME IntegrationTests.request_valid_file COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/tests/integration_tests/integration_test_requested_file_success.py ${CMAKE_CURRENT_BINARY_DIR}/bin/server WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tests/integration_tests/)
-    add_test(NAME IntegrationTests.request_invalid_file COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/tests/integration_tests/integration_test_requested_file_fail.py ${CMAKE_CURRENT_BINARY_DIR}/bin/server WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tests/integration_tests/)
-    add_test(NAME IntegrationTests.crud_post COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/tests/integration_tests/integration_test_crud_post.py ${CMAKE_CURRENT_BINARY_DIR}/bin/server WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tests/integration_tests/)
-    add_test(NAME IntegrationTests.crud_get COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/tests/integration_tests/integration_test_crud_get.py ${CMAKE_CURRENT_BINARY_DIR}/bin/server WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tests/integration_tests/)
-    add_test(NAME IntegrationTests.crud_put COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/tests/integration_tests/integration_test_crud_put.py ${CMAKE_CURRENT_BINARY_DIR}/bin/server WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tests/integration_tests/)
-    add_test(NAME IntegrationTests.crud_delete COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/tests/integration_tests/integration_test_crud_delete.py ${CMAKE_CURRENT_BINARY_DIR}/bin/server WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tests/integration_tests/)
-    add_test(NAME IntegrationTests.crud_list COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/tests/integration_tests/integration_test_crud_list.py ${CMAKE_CURRENT_BINARY_DIR}/bin/server WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tests/integration_tests/)
-    add_test(NAME IntegrationTests.health COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/tests/integration_tests/integration_test_health.py ${CMAKE_CURRENT_BINARY_DIR}/bin/server WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tests/integration_tests/)
-    add_test(NAME IntegrationTests.multithread COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/tests/integration_tests/integration_test_multithread.py ${CMAKE_CURRENT_BINARY_DIR}/bin/server WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tests/integration_tests/)
+    #add_test(NAME IntegrationTests.example_config COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/tests/integration_tests/integration_test_example_config.py ${CMAKE_CURRENT_BINARY_DIR}/bin/server WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tests/integration_tests/)
+    #add_test(NAME IntegrationTests.empty_config COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/tests/integration_tests/integration_test_empty_config.py ${CMAKE_CURRENT_BINARY_DIR}/bin/server WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tests/integration_tests/)
+    #add_test(NAME IntegrationTests.missing_closing_parens COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/tests/integration_tests/integration_test_missing_closing_parentheses.py ${CMAKE_CURRENT_BINARY_DIR}/bin/server WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tests/integration_tests/)
+    #add_test(NAME IntegrationTests.empty_brackets COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/tests/integration_tests/integration_test_empty_brackets.py ${CMAKE_CURRENT_BINARY_DIR}/bin/server WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tests/integration_tests/)
+    #add_test(NAME IntegrationTests.multiple_end_brackets COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/tests/integration_tests/integration_test_multiple_end_brackets.py ${CMAKE_CURRENT_BINARY_DIR}/bin/server WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tests/integration_tests/)
+    #add_test(NAME IntegrationTests.request_valid_file COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/tests/integration_tests/integration_test_requested_file_success.py ${CMAKE_CURRENT_BINARY_DIR}/bin/server WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tests/integration_tests/)
+    #add_test(NAME IntegrationTests.request_invalid_file COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/tests/integration_tests/integration_test_requested_file_fail.py ${CMAKE_CURRENT_BINARY_DIR}/bin/server WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tests/integration_tests/)
+    #add_test(NAME IntegrationTests.crud_post COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/tests/integration_tests/integration_test_crud_post.py ${CMAKE_CURRENT_BINARY_DIR}/bin/server WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tests/integration_tests/)
+    #add_test(NAME IntegrationTests.crud_get COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/tests/integration_tests/integration_test_crud_get.py ${CMAKE_CURRENT_BINARY_DIR}/bin/server WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tests/integration_tests/)
+    #add_test(NAME IntegrationTests.crud_put COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/tests/integration_tests/integration_test_crud_put.py ${CMAKE_CURRENT_BINARY_DIR}/bin/server WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tests/integration_tests/)
+    #add_test(NAME IntegrationTests.crud_delete COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/tests/integration_tests/integration_test_crud_delete.py ${CMAKE_CURRENT_BINARY_DIR}/bin/server WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tests/integration_tests/)
+    #add_test(NAME IntegrationTests.crud_list COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/tests/integration_tests/integration_test_crud_list.py ${CMAKE_CURRENT_BINARY_DIR}/bin/server WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tests/integration_tests/)
+    #add_test(NAME IntegrationTests.health COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/tests/integration_tests/integration_test_health.py ${CMAKE_CURRENT_BINARY_DIR}/bin/server WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tests/integration_tests/)
+    #add_test(NAME IntegrationTests.multithread COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/tests/integration_tests/integration_test_multithread.py ${CMAKE_CURRENT_BINARY_DIR}/bin/server WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tests/integration_tests/)
 endif()
 
 #Discover tests

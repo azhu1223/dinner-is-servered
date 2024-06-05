@@ -21,7 +21,8 @@ COPY --from=builder /usr/src/project/confs/cloud_config .
 COPY --from=builder /usr/src/project/resources ./resources
 COPY --from=builder /usr/src/project/app_pages ./app_pages
 
-
+# Reinstall libcurl in the final build stage
+RUN apt-get update && apt-get install -y libcurl4-openssl-dev
 
 EXPOSE 80
 

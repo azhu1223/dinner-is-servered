@@ -6,6 +6,9 @@
 #include <string>
 
 
+#include <curl/curl.h>
+#include <iostream>
+
 
 AppHandler::AppHandler(LoggingBuffer* logging_buffer) : RequestHandler(), logging_buffer_(logging_buffer) {}
 
@@ -62,9 +65,35 @@ int AppHandler::get_best_image_index(const std::vector<std::string>& image_data)
     return 0;
 }
 
+size_t WriteCallback(void* contents, size_t size, size_t nmemb, void* userp) {
+    ((std::string*)userp)->append((char*)contents, size * nmemb);
+    return size * nmemb;
+}
+
 std::string AppHandler::generate_caption(const std::string& image, const std::string& relevant_info){
     //TODO Implement this function
-    return "dummy caption";
+    // return "dummy caption";
+
+    std::string url = "google.com/";
+    CURL* curl;
+    CURLcode res;
+    std::string readBuffer;
+
+    curl = curl_easy_init();
+    if(curl) {
+        curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
+        curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteCallback);
+        curl_easy_setopt(curl, CURLOPT_WRITEDATA, &readBuffer);
+
+        res = curl_easy_perform(curl);
+        if(res != CURLE_OK) {
+            fprintf(stderr, "curl_easy_perform() failed: %s\n", curl_easy_strerror(res));
+        }
+
+        curl_easy_cleanup(curl);
+    }
+    return readBuffer;
+
 }
 
 
