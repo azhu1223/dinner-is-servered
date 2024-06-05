@@ -36,11 +36,16 @@ http::response<http::vector_body<char>> AppHandler::process_post(const http::req
     std::string caption = generate_caption(image_data[best_image_index], relevant_info);
 
 
-    std::vector<char> response_body_vector =std::vector<char>(caption.begin(), caption.end());
+    //Create the JSON
+    std::string json = "{\"caption\":\"" + caption + "\", \"best_image_index\":" + std::to_string(best_image_index) + "}";
+
+    //Create the response
+
+    std::vector<char> response_body_vector =std::vector<char>(json.begin(), json.end());
 
     auto response = http::response<http::vector_body<char>>(http::status::ok, 11U, response_body_vector);
 
-    response.set(http::field::content_type, "text/plain");
+    response.set(http::field::content_type, "application/json");
     response.set(http::field::content_length, std::to_string(response_body_vector.size()));
 
     response.prepare_payload();

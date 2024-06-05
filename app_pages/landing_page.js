@@ -1,4 +1,11 @@
 document.getElementById('gram-form').addEventListener('submit', function(event) {
+
+    //Hide the response message if it is there from previous requests
+    const responseDiv = document.getElementById('response');
+    if (responseDiv) {
+        responseDiv.style.display = 'none';
+    }
+
     event.preventDefault(); // Prevent the default form submission behavior
 
     // Show loading message and disable submit button
@@ -31,21 +38,26 @@ document.getElementById('gram-form').addEventListener('submit', function(event) 
         if (!response.ok) {
             throw new Error('Network response was not ok');
         }
-        return response.text(); // Convert the response to plain text
+        return response.json(); // Convert the response to json
     })
-    .then(text => {
-        console.log('Success:', text);
+    .then(json => {
+        console.log('Success:', json);
 
         // Hide loading message
         document.getElementById('loading').style.display = 'none';
 
         // Display response
-        const responseDiv = document.getElementById('response');
-        responseDiv.style.display = 'block';
-        responseDiv.innerHTML = `
-            <h2>Response Received</h2>
-            <pre>${text}</pre>
-        `;
+        const reader = new FileReader();
+        const image_file = files[json.best_image_index];
+        reader.onload = function(e) {
+            responseDiv.style.display = 'block';
+            responseDiv.innerHTML = `
+                <h2>Best Instagram Post</h2>
+                <img id="image-display" src="${e.target.result}" alt="Best Instagram Photo">
+                <pre>${json.caption}</pre>
+            `;
+        }
+        reader.readAsDataURL(image_file);
 
         // Enable the submit button
         submitButton.disabled = false;
