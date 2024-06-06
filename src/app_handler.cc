@@ -40,7 +40,18 @@ http::response<http::vector_body<char>> AppHandler::process_post(const http::req
 
 
     //Create the JSON
-    std::string json = "{\"caption\":\"" + caption + "\", \"best_image_index\":" + std::to_string(best_image_index) + "}";
+    std::string special_character_escaped_caption;
+    for (char c : caption) {
+        if (c == '"') {
+            special_character_escaped_caption += "\\\"";
+        } else if (c == '\\') {
+            special_character_escaped_caption += "\\\\";
+        } else if (c != '\n' && c!='\r' && c!= '\t') {
+            special_character_escaped_caption += c;
+        }
+    }
+
+    std::string json = "{\"caption\":\"" + special_character_escaped_caption + "\", \"best_image_index\":" + std::to_string(best_image_index) + "}";
 
     //Create the response
 

@@ -53,8 +53,8 @@ document.getElementById('gram-form').addEventListener('submit', function(event) 
             responseDiv.style.display = 'block';
             responseDiv.innerHTML = `
                 <h2>Best Instagram Post</h2>
-                <img id="image-display" src="${e.target.result}" alt="Best Instagram Photo">
-                <pre>${json.caption}</pre>
+                <img id="image-display" src="${e.target.result}" alt="Best Instagram Photo" style="max-width:100%;">
+                <pre style="text-wrap: wrap;">${json.caption}</pre>
             `;
         }
         reader.readAsDataURL(image_file);
