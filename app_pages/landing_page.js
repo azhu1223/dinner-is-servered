@@ -16,23 +16,43 @@ document.getElementById('gram-form').addEventListener('submit', function(event) 
     // Create a FormData object
     const formData = new FormData();
 
-    // Get the files and append them to the FormData object
+    // Get the files and convert them to base64 encoded strings
     const files = document.getElementById('file-upload').files;
+    const fileReaders = [];
+    const base64Files = [];
+
     for (let i = 0; i < files.length; i++) {
-        formData.append('file-upload', files[i]);
+        const reader = new FileReader();
+        fileReaders.push(new Promise((resolve, reject) => {
+            reader.onload = function(event) {
+                base64Files.push(event.target.result);
+                resolve();
+            };
+            reader.onerror = function(error) {
+                reject(error);
+            };
+            reader.readAsDataURL(files[i]);
+        }));
     }
 
-    //Append the number of images
-    formData.append('number-of-images', files.length);
+    // Wait for all files to be read and then append them to the FormData object
+    Promise.all(fileReaders).then(() => {
+        for (let i = 0; i < base64Files.length; i++) {
+            formData.append('file-upload', base64Files[i]);
+        }
 
-    // Get the relevant information and append it to the FormData object
-    const relevantInfo = document.getElementById('relevant-info').value;
-    formData.append('relevant-info', relevantInfo);
+        // Append the number of images
+        formData.append('number-of-images', files.length);
 
-    // Send a POST request with the form data
-    fetch('/app', {
-        method: 'POST',
-        body: formData
+        // Get the relevant information and append it to the FormData object
+        const relevantInfo = document.getElementById('relevant-info').value;
+        formData.append('relevant-info', relevantInfo);
+
+        // Send a POST request with the form data
+        return fetch('/app', {
+            method: 'POST',
+            body: formData
+        });
     })
     .then(response => {
         if (!response.ok) {
@@ -79,5 +99,4 @@ document.getElementById('gram-form').addEventListener('submit', function(event) 
         // Enable the submit button
         submitButton.disabled = false;
     });
-
 });

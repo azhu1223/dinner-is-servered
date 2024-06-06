@@ -49,7 +49,8 @@ find_package(CURL)
 message(STATUS "Curl version: ${CURL_VERSION_STRING}")
 message(STATUS "The CURL libraries are: ${CURL_LIBRARIES}")
 
-
+# Find nlohmann_json package
+find_package(nlohmann_json 3.2.0 REQUIRED)
 
 # Enable cmake testing
 include(CTest)
@@ -183,6 +184,7 @@ target_link_libraries(app_handler_lib
                     Boost::log_setup 
                     Boost::log
                     ${CURL_LIBRARIES}
+                    nlohmann_json::nlohmann_json
                     )
 
 target_link_libraries(sleep_handler_lib

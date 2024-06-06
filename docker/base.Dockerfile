@@ -18,5 +18,7 @@ RUN apt-get update && apt-get install -y \
     libgtest-dev \
     netcat \
     gcovr \
-    bc
+    bc \
+    nlohmann-json3-dev
+
 
