@@ -282,6 +282,10 @@ target_link_libraries(health_handler_test health_handler_lib logging_buffer_lib 
 add_executable(sleep_handler_test tests/sleep_handler_test.cc)
 target_link_libraries(sleep_handler_test sleep_handler_lib logging_buffer_lib  Boost::log_setup Boost::log gtest_main)
 
+add_executable(app_handler_test tests/app_handler_test.cc)
+target_link_libraries(app_handler_test app_handler_lib logging_buffer_lib gtest_main Boost::log_setup Boost::log)
+
+
 add_executable(session_test tests/session_test.cc)
 target_link_libraries(session_test session_lib logging_buffer_lib request_dispatcher_lib request_handler_lib not_found_handler_lib echo_handler_lib static_handler_lib logger_lib Boost::log_setup Boost::log gtest_main)
 
@@ -328,6 +332,7 @@ target_link_libraries(registry_test registry_lib logging_buffer_lib echo_handler
 add_executable(logging_buffer_test tests/logging_buffer_test.cc)
 target_link_libraries(logging_buffer_test logging_buffer_lib gtest_main)
 
+
 # Add Integration Tests
 if (NOT CMAKE_BUILD_TYPE STREQUAL Coverage)
     add_test(NAME IntegrationTests.example_config COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/tests/integration_tests/integration_test_example_config.sh ${CMAKE_CURRENT_BINARY_DIR}/bin/server WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tests/integration_tests/)
@@ -363,7 +368,7 @@ gtest_discover_tests(registry_test WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
 gtest_discover_tests(server_test WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tests)
 gtest_discover_tests(logging_buffer_test WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tests)
 gtest_discover_tests(sleep_handler_test WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tests)
-
+gtest_discover_tests(app_handler_test WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tests)
 
 
 # Generate Coverage Report
@@ -385,6 +390,7 @@ generate_coverage_report(TARGETS
                             crud_file_manager_lib
                             registry_lib 
                             logging_buffer_lib
+                            app_handler_lib
                         TESTS 
                             config_parser_test
                             config_interpreter_test
@@ -401,4 +407,6 @@ generate_coverage_report(TARGETS
                             crud_handler_test 
                             crud_file_manager_test 
                             registry_test
-                            logging_buffer_test)
+                            logging_buffer_test
+                            app_handler_test
+                            )
