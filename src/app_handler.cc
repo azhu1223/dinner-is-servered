@@ -1,4 +1,9 @@
-
+#include "app_handler.h"
+#include "logging_buffer.h"
+#include <fstream>
+#include <chrono>
+#include <thread>
+#include <string>
 #include <curl/curl.h>
 #include <iostream>
 #include <nlohmann/json.hpp>
@@ -12,7 +17,7 @@ http::response<http::vector_body<char>> AppHandler::handle_request(const http::r
     if (req.method() == http::verb::post) {
       return process_post(req);
     } else if (req.method() == http::verb::get) {
-      return generate_landing_page (req);;
+      return generate_landing_page (req);
     } else {
         std::vector<char> body;
         http::response<http::vector_body<char>> response = http::response<http::vector_body<char>>(http::status::bad_request, 11U, body);
@@ -68,7 +73,7 @@ http::response<http::vector_body<char>> AppHandler::process_post(const http::req
     return response;
 }
 
-size_t WriteCallback(void* contents, size_t size, size_t nmemb, void* userp) {
+size_t AppHandler::WriteCallback(void* contents, size_t size, size_t nmemb, void* userp) {
     ((std::string*)userp)->append((char*)contents, size * nmemb);
     return size * nmemb;
 }

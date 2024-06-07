@@ -16,6 +16,7 @@ class AppHandler : public RequestHandler {
         virtual http::response<http::vector_body<char>> handle_request(const http::request<http::vector_body<char>>& req);
         http::response<http::vector_body<char>> generate_landing_page(const http::request<http::vector_body<char>>& req);
         http::response<http::vector_body<char>> process_post(const http::request<http::vector_body<char>>& req);
+        static size_t WriteCallback(void* contents, size_t size, size_t nmemb, void* userp);
 
     private:
         LoggingBuffer* logging_buffer_;
@@ -23,6 +24,7 @@ class AppHandler : public RequestHandler {
         static std::vector<std::string> get_images(std::string body);
         static int get_best_image_index(const std::vector<std::string>& image_data);
         static std::string generate_caption(const std::string& image, const std::string& relevant_info);
+
 
 };
 
