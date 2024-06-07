@@ -1,67 +1,121 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap');
+
+* {
+    font-family: 'Montserrat', sans-serif;
+}
+
+html {
+    overflow: auto;
+}
+
 body {
-    font-family: Arial, sans-serif;
     margin: 0;
     padding: 0;
     display: flex;
     justify-content: center;
     align-items: center;
     height: 100vh;
-    background-color: #f0f0f0;
+    background: #833ab4;
+    background: linear-gradient(
+      to right,
+      #833ab4,#fd1d1d,#fcb045
+    );
 }
+
 .container {
     background-color: #fff;
-    padding: 20px;
+    padding: 1.5em;
     border-radius: 10px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    box-shadow: 10px 10px 10px 10px rgba(0, 0, 0, 0.1);
     width: 90%;
-    max-width: 500px;
+    max-width: 50vw;
     box-sizing: border-box;
 }
+
 h1 {
     text-align: center;
     margin-bottom: 10px;
 }
+
 .description {
-    text-align: center;
+    text-align: justify;
     margin-bottom: 20px;
+    line-height: 125%;
+    font-size: 1.2em;
+    font-weight: 500;
 }
+
 .form-group {
     margin-bottom: 15px;
 }
+
 label {
     display: block;
     margin-bottom: 5px;
+    font-size: 1.1em;
+    font-weight: 500;
 }
-input[type="text"], input[type="file"], input[type="submit"], textarea {
+
+input[type="text"], input[type="file"], textarea {
     width: 100%;
     padding: 10px;
     margin: 5px 0 10px;
     border: 1px solid #ccc;
-    border-radius: 5px;
+    border-radius: 10px;
     box-sizing: border-box;
+    font-size: 1em;
 }
-input[type="submit"] {
+
+#submit-button {
     background-color: #4CAF50;
     color: white;
     border: none;
     cursor: pointer;
+    font-size: larger;
+    font-weight: 600;
+    width: 100%;
+    padding: 10px;
+    margin: 5px 0 10px;
+    border: 1px solid #ccc;
+    border-radius: 1.2em;
+    box-sizing: border-box;
 }
-input[type="submit"]:hover {
+
+#submit-button:hover {
     background-color: #45a049;
 }
+
 input[type="submit"]:disabled {
     background-color: #ccc;
     cursor: not-allowed;
 }
+
 textarea {
     resize: vertical;
-    height: 100px;
+    height: 120px;
 }
+
 .loading {
     text-align: center;
     margin-top: 20px;
 }
+
 .response {
     text-align: center;
     margin-top: 20px;
+}
+
+input[type="file"]::file-selector-button {
+    background-color: #4CAF50;
+    color: white;
+    padding: 10px;
+    font-weight: 500;
+    cursor: pointer;
+    outline: none;
+    border: 1px solid #ccc;
+    border-radius: 12px;
+}
+
+input[type="file"] {
+    font-weight: 500;
 }

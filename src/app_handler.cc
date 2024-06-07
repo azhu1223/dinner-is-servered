@@ -1,10 +1,3 @@
-#include "app_handler.h"
-#include "logging_buffer.h"
-#include <fstream>
-#include <chrono>
-#include <thread>
-#include <string>
-
 
 #include <curl/curl.h>
 #include <iostream>
@@ -26,7 +19,6 @@ http::response<http::vector_body<char>> AppHandler::handle_request(const http::r
         response.prepare_payload();
         return response;
     }
-    
 }
 
 http::response<http::vector_body<char>> AppHandler::process_post(const http::request<http::vector_body<char>>& req){
