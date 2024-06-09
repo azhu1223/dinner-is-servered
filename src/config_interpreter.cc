@@ -123,6 +123,7 @@ void ConfigInterpreter::setServerPaths(NginxConfig &config){
                     }
 
                     else if (location_type == "AppHandler") {
+                        app_paths.push_back(location);
                         bool found_gpt_url = false;
                         bool found_api_key = false;
                         for (const auto& lv3statement : lv2Statement->child_block_->statements_) {

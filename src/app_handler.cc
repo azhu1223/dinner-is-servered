@@ -44,11 +44,14 @@ http::response<http::vector_body<char>> AppHandler::process_post(const http::req
 
     // Choose best image and generate caption
     int best_image_index = get_best_image_index(image_data);
-    // Check that there was a valid image index
-    if (best_image_index < 0 || best_image_index >= image_data.size()) {
-        json = "{\"caption\":\"An error occurred while selecting an image\",\"best_image_index\":-1}";
+    //Check that there was a valid image index
+    if (best_image_index < 0 || best_image_index >= image_data.size() ){
+        json = "{\"caption\":\"An error occured while selecting an image\",\"best_image_index\":" + std::to_string(best_image_index)+"}";
         logging_buffer_->addToBuffer(ERROR, "Error selecting best image index");
-    } else {
+
+    }
+    else{
+
         std::string caption = generate_caption(image_data[best_image_index], relevant_info);
 
         // Create the JSON
@@ -81,6 +84,12 @@ http::response<http::vector_body<char>> AppHandler::process_post(const http::req
 
 int AppHandler::get_best_image_index(const std::vector<std::string>& image_data) {
     logging_buffer_->addToBuffer(INFO, "Selecting best image index from provided images");
+    //If only one image, return immediately 0
+    if (image_data.size() == 1){
+        return 0;
+    }
+
+
     CURL* curl;
     CURLcode res;
     std::string readBuffer;
@@ -90,9 +99,10 @@ int AppHandler::get_best_image_index(const std::vector<std::string>& image_data)
     int index = -1;
     int max_score = 0;
 
-    for (int i = 0; i < image_data.size(); i++) {
+    for(int i = 0; i < image_data.size(); i++){
+        readBuffer.clear();
         curl = curl_easy_init();
-        std::string index_str;
+        std::string score_str;
 
         if (curl) {
             struct curl_slist* headers = NULL;
@@ -132,20 +142,24 @@ int AppHandler::get_best_image_index(const std::vector<std::string>& image_data)
             res = curl_easy_perform(curl);
             if (res != CURLE_OK) {
                 logging_buffer_->addToBuffer(ERROR, "CURL error: " + std::string(curl_easy_strerror(res)));
-                index_str = "-1";
+                index = -2;
             } else {
                 // Parse the JSON response
                 try {
                     auto jsonResponse = nlohmann::json::parse(readBuffer);
-                    index_str = jsonResponse["choices"][0]["message"]["content"];
-                    int score = std::stoi(index_str);
-                    if (score > max_score) {
+                    score_str = jsonResponse["choices"][0]["message"]["content"];
+                    //Remove non numeric (newline) characters
+                    score_str.erase(std::remove_if(score_str.begin(), score_str.end(), [](char c) { return !std::isdigit(c); }), score_str.end());
+
+                    int score = std::stoi(score_str);
+                    if(score > max_score){
                         max_score = score;
                         index = i;
                     }
+
                 } catch (const std::exception& e) {
                     logging_buffer_->addToBuffer(ERROR, "Error parsing JSON response: " + std::string(e.what()));
-                    index_str = "-1";
+                    index = -3;
                 }
             }
 
