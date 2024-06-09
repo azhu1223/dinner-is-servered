@@ -8,6 +8,10 @@
 #include <iostream>
 #include <nlohmann/json.hpp>
 
+size_t AppHandler::WriteCallback(void* contents, size_t size, size_t nmemb, void* userp) {
+    ((std::string*)userp)->append((char*)contents, size * nmemb);
+    return size * nmemb;
+}
 
 AppHandler::AppHandler(LoggingBuffer* logging_buffer) : RequestHandler(), logging_buffer_(logging_buffer) {}
 
@@ -73,10 +77,6 @@ http::response<http::vector_body<char>> AppHandler::process_post(const http::req
     return response;
 }
 
-size_t AppHandler::WriteCallback(void* contents, size_t size, size_t nmemb, void* userp) {
-    ((std::string*)userp)->append((char*)contents, size * nmemb);
-    return size * nmemb;
-}
 
 int AppHandler::get_best_image_index(const std::vector<std::string>& image_data){
     CURL* curl;
@@ -242,7 +242,7 @@ std::vector<std::string> AppHandler::get_images(std::string body){
     std::vector <std::string > images;
 
     for (int i=0; i<number_of_images; i++){
-        //Find the satrting point
+        //Find the starting point
         target = "Content-Disposition: form-data; name=\"file-upload\"\r\n\r\n";
         index = body.find(target) + target.length();
 
@@ -292,7 +292,6 @@ http::response<http::vector_body<char>> AppHandler::generate_landing_page(const 
         return response;
     }
 
-    // Get file size
     file.seekg(0, std::ios::end);
     std::streampos file_size = file.tellg();
     file.seekg(0, std::ios::beg);
@@ -303,7 +302,6 @@ http::response<http::vector_body<char>> AppHandler::generate_landing_page(const 
 
     // Read file content into the response buffer after the header
     if (!file.read(res.data(), file_size)) {
-        // Failed to read file
         file.close();
         logging_buffer_->addToBuffer(ERROR, "Failed to read file");
     }

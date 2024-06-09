@@ -138,3 +138,18 @@ TEST_F(StaticHandlerTest, UnsupportedFileType) {
     EXPECT_EQ(response.result(), http::status::not_found);
 }
 
+
+
+TEST_F(StaticHandlerTest, HandleNonGet) {
+
+    http::request<http::vector_body<char>> req;
+    req.method(http::verb::options);
+    req.target("/non-existent-file.txt");
+    req.version(11);
+
+    http::response<http::vector_body<char>> response = handler->handle_request(req);
+
+    EXPECT_EQ(response.result(), http::status::bad_request);
+}
+
+

@@ -138,36 +138,6 @@ TEST_F(AppHandlerTest, ProcessPost_ValidBody_ExtractsRelevantInformation) {
     EXPECT_EQ(response[http::field::content_type], "application/json");
 }
 
-// TEST_F(AppHandlerTest, ProcessPost_InvalidBody_NoRelevantInformation) {
-//     std::string body_content = "Invalid body content";
-//     std::vector<char> body_vector(body_content.begin(), body_content.end());
-//     http::request<http::vector_body<char>> req{http::verb::post, "/app", 11, std::move(body_vector)};
-
-//     auto response = handler->process_post(req);
-    
-//     std::string response_body(response.body().begin(), response.body().end());
-//     EXPECT_EQ(response.result(), http::status::ok);
-//     EXPECT_NE(response_body.find("\"best_image_index\":-1"), std::string::npos);
-// }
-
-// TEST_F(AppHandlerTest, ProcessPost_MultipleImages_ReturnsBestImage) {
-//     std::string body_content = "Content-Disposition: form-data; name=\"relevant-info\"\r\n\r\ninfo\r\n"
-//                                "Content-Disposition: form-data; name=\"number-of-images\"\r\n\r\n2\r\n"
-//                                "Content-Disposition: form-data; name=\"file-upload\"\r\n\r\nimage_data_1\r\n"
-//                                "Content-Disposition: form-data; name=\"file-upload\"\r\n\r\nimage_data_2\r\n";
-//     std::vector<char> body_vector(body_content.begin(), body_content.end());
-//     http::request<http::vector_body<char>> req{http::verb::post, "/app", 11, std::move(body_vector)};
-
-//     auto response = handler->process_post(req);
-    
-//     std::string response_body(response.body().begin(), response.body().end());
-//     EXPECT_EQ(response.result(), http::status::ok);
-//     EXPECT_EQ(response[http::field::content_type], "application/json");
-//     EXPECT_NE(response_body.find("image_data_1"), std::string::npos);
-//     EXPECT_NE(response_body.find("image_data_2"), std::string::npos);
-//     EXPECT_NE(response_body.find("\"best_image_index\":"), std::string::npos);
-// }
-
 TEST_F(AppHandlerTest, ProcessPost_GeneratesCaption) {
     std::string relevant_info = "Sample relevant info for caption";
     std::string image_data = load_image("./images/image.png");

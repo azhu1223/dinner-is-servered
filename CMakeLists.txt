@@ -49,7 +49,7 @@ find_package(CURL)
 message(STATUS "Curl version: ${CURL_VERSION_STRING}")
 message(STATUS "The CURL libraries are: ${CURL_LIBRARIES}")
 
-# Find nlohmann_json package
+# Find nlohmann_json package for json parsing GPT API responses and requests
 find_package(nlohmann_json 3.2.0 REQUIRED)
 
 # Enable cmake testing
@@ -89,8 +89,6 @@ add_library(health_handler_lib src/health_handler.cc)
 add_library(sleep_handler_lib src/sleep_handler.cc)
 add_library(logging_buffer_lib src/logging_buffer.cc)
 add_library(app_handler_lib src/app_handler.cc)
-
-
 
 
 target_link_libraries(logger_lib

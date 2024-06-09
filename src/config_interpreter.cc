@@ -139,10 +139,6 @@ void ConfigInterpreter::setServerPaths(NginxConfig &config){
     paths.health_ = health_paths;
     paths.sleep_ = sleep_paths;
     paths.app_ = app_paths;
-
-
-
-
     server_paths_ = paths;
 }
 
