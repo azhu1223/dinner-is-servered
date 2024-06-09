@@ -3,10 +3,9 @@
 
 #include "request_handler.h"
 #include "logging_buffer.h"
-#include "utils.h"
+#include "config_parser.h" // Include config parser header
 #include <vector>
 #include <string>
-
 
 namespace http = boost::beast::http;
 
@@ -20,12 +19,12 @@ class AppHandler : public RequestHandler {
 
     private:
         LoggingBuffer* logging_buffer_;
-        static std::string get_relevant_information(const std::string& body);
-        static std::vector<std::string> get_images(std::string body);
-        static int get_best_image_index(const std::vector<std::string>& image_data);
-        static std::string generate_caption(const std::string& image, const std::string& relevant_info);
-
-
+        std::string api_key_;
+        std::string chatgpt_url_;
+        std::string get_relevant_information(const std::string& body);
+        std::vector<std::string> get_images(std::string body);
+        int get_best_image_index(const std::vector<std::string>& image_data);
+        std::string generate_caption(const std::string& image, const std::string& relevant_info);
 };
 
 class AppHandlerFactory {
