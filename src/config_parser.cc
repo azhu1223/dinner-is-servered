@@ -242,22 +242,22 @@ bool NginxConfigParser::Parse(const char* file_name, NginxConfig* config) {
   return return_value;
 }
 
-std::string NginxConfig::GetValue(const std::string &key) const {
-    for (const auto &statement : statements_) {
-        if (statement->tokens_.size() == 2 && statement->tokens_[0] == key) {
-            return statement->tokens_[1];
-        }
-    }
-    return "";
-}
+// std::string NginxConfig::GetValue(const std::string &key) const {
+//     for (const auto &statement : statements_) {
+//         if (statement->tokens_.size() == 2 && statement->tokens_[0] == key) {
+//             return statement->tokens_[1];
+//         }
+//     }
+//     return "";
+// }
 
-std::string NginxConfig::GetHandlerConfig(const std::string &handler_name, const std::string &key) const {
-    for (const auto &statement : statements_) {
-        if (statement->tokens_.size() > 0 && statement->tokens_[0] == handler_name) {
-            if (statement->child_block_ != nullptr) {
-                return statement->child_block_->GetValue(key);
-            }
-        }
-    }
-    return "";
-}
+// std::string NginxConfig::GetHandlerConfig(const std::string &handler_name, const std::string &key) const {
+//     for (const auto &statement : statements_) {
+//         if (statement->tokens_.size() > 0 && statement->tokens_[0] == handler_name) {
+//             if (statement->child_block_ != nullptr) {
+//                 return statement->child_block_->GetValue(key);
+//             }
+//         }
+//     }
+//     return "";
+// }
