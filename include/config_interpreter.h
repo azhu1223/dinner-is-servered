@@ -21,9 +21,9 @@ public:
     static ServerPaths getServerPaths();
 
     //static void set_api_key(const std::string& api_key) 
-    static std::string get_api_key()
+    static std::string get_api_key();
     //static void set_chatgpt_url(const std::string& chatgpt_url) 
-    static std::string get_chatgpt_url()
+    static std::string get_chatgpt_url();
 
 private:
     static ServerPaths server_paths_;
