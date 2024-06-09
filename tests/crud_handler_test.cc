@@ -584,3 +584,162 @@ TEST_F(CrudHandlerTest, ListRequestEmptyEntityNameTest) {
 
     int deleted = std::filesystem::remove_all(crud_paths["/api"]);
 }
+
+// (1) POST Tests 
+
+TEST_F(CrudHandlerTest, PostRequestEmptyBodyTest) {
+    std::vector<std::string> echo_paths;
+    std::map<std::string, std::string> static_paths;
+    std::map<std::string, std::string> crud_paths;
+    echo_paths.push_back("/echo1");
+    static_paths["/static"] = "./static";
+    crud_paths["/api"] = "./data";
+    ServerPaths sp;
+    sp.echo_ = echo_paths;
+    sp.static_ = static_paths;
+    sp.crud_ = crud_paths;
+    ConfigInterpreter::setServerPaths(sp);
+
+    std::string string_body = "";
+    std::vector<char> post_body(string_body.begin(), string_body.end());
+    http::request<http::vector_body<char>> req;
+    req.method(http::verb::post);
+    req.target("/api/PostRequestTest");
+    req.version(11);
+    req.body() = post_body;
+    req.prepare_payload();
+
+    std::shared_ptr<FakeCrudFileManager> manager = std::make_shared<FakeCrudFileManager>(lb);
+    CrudHandler handler(manager, lb);
+    http::response<http::vector_body<char>> response = handler.handle_request(req);
+
+    EXPECT_EQ(response.result(), http::status::created);
+
+    int deleted = std::filesystem::remove_all(crud_paths["/api"]);
+}
+
+// (2) PUT Tests 
+
+TEST_F(CrudHandlerTest, PutRequestEmptyBodyTest) {
+    std::vector<std::string> echo_paths;
+    std::map<std::string, std::string> static_paths;
+    std::map<std::string, std::string> crud_paths;
+    echo_paths.push_back("/echo1");
+    static_paths["/static"] = "./static";
+    crud_paths["/api"] = "./data";
+    ServerPaths sp;
+    sp.echo_ = echo_paths;
+    sp.static_ = static_paths;
+    sp.crud_ = crud_paths;
+    ConfigInterpreter::setServerPaths(sp);
+
+    // Trying with empty body (/api/Books/1)
+
+    std::string string_body = "";
+    std::vector<char> put_body(string_body.begin(), string_body.end());
+    http::request<http::vector_body<char>> req;
+    req.method(http::verb::put);
+    req.target("/api/Books/1");
+    req.version(11);
+    req.body() = put_body;
+    req.prepare_payload();
+
+    std::shared_ptr<FakeCrudFileManager> manager = std::make_shared<FakeCrudFileManager>(lb);
+    CrudHandler handler(manager, lb);
+    http::response<http::vector_body<char>> response = handler.handle_request(req);
+
+    EXPECT_EQ(response.result(), http::status::created);
+
+    int deleted = std::filesystem::remove_all(crud_paths["/api"]);
+}
+
+// (3) GET Tests 
+
+TEST_F(CrudHandlerTest, GetRequestNonExistingEntityNameTest) {
+    std::map<std::string, std::string> crud_paths;
+    crud_paths["/api"] = "./data";
+    ServerPaths sp;
+    sp.crud_ = crud_paths;
+    ConfigInterpreter::setServerPaths(sp);
+
+    std::shared_ptr<FakeCrudFileManager> manager = std::make_shared<FakeCrudFileManager>(lb);
+    CrudHandler handler(manager, lb);
+
+    http::request<http::vector_body<char>> req;
+    req.method(http::verb::get);
+    req.target("/api/NonExistingEntity/1");
+    req.version(11);
+    req.prepare_payload();
+
+    http::response<http::vector_body<char>> response = handler.handle_request(req);
+
+    EXPECT_EQ(response.result(), http::status::not_found);
+
+    int deleted = std::filesystem::remove_all(crud_paths["/api"]);
+}
+
+// (4) DELETE Tests 
+
+TEST_F(CrudHandlerTest, DeleteRequestNonExistingEntityNameTest) {
+    std::vector<std::string> echo_paths;
+    std::map<std::string, std::string> static_paths;
+    std::map<std::string, std::string> crud_paths;
+    echo_paths.push_back("/echo1");
+    static_paths["/static"] = "./static";
+    crud_paths["/api"] = "./data";
+    ServerPaths sp;
+    sp.echo_ = echo_paths;
+    sp.static_ = static_paths;
+    sp.crud_ = crud_paths;
+    ConfigInterpreter::setServerPaths(sp);
+
+    // Trying to delete a non-existing entity
+    http::request<http::vector_body<char>> req;
+    req.method(http::verb::delete_);
+    req.target("/api/NonExistingEntity/1");
+    req.version(11);
+    req.prepare_payload();
+
+    std::shared_ptr<FakeCrudFileManager> manager = std::make_shared<FakeCrudFileManager>(lb);
+    CrudHandler handler(manager, lb);
+    http::response<http::vector_body<char>> response = handler.handle_request(req);
+
+    EXPECT_EQ(response.result(), http::status::no_content);
+
+    int deleted = std::filesystem::remove_all(crud_paths["/api"]);
+}
+
+// (5) Miscellaneous Tests 
+
+TEST_F(CrudHandlerTest, PutRequestInvalidJsonTest) {
+    std::vector<std::string> echo_paths;
+    std::map<std::string, std::string> static_paths;
+    std::map<std::string, std::string> crud_paths;
+    echo_paths.push_back("/echo1");
+    static_paths["/static"] = "./static";
+    crud_paths["/api"] = "./data";
+    ServerPaths sp;
+    sp.echo_ = echo_paths;
+    sp.static_ = static_paths;
+    sp.crud_ = crud_paths;
+    ConfigInterpreter::setServerPaths(sp);
+
+    // Trying with invalid JSON body (/api/Books/1)
+
+    std::string string_body = "{ data: \"1\""; // Invalid JSON
+    std::vector<char> put_body(string_body.begin(), string_body.end());
+    http::request<http::vector_body<char>> req;
+    req.method(http::verb::put);
+    req.target("/api/Books/1");
+    req.version(11);
+    req.body() = put_body;
+    req.prepare_payload();
+
+    std::shared_ptr<FakeCrudFileManager> manager = std::make_shared<FakeCrudFileManager>(lb);
+    CrudHandler handler(manager, lb);
+    http::response<http::vector_body<char>> response = handler.handle_request(req);
+
+    EXPECT_EQ(response.result(), http::status::created); // Should still create the file
+
+    int deleted = std::filesystem::remove_all(crud_paths["/api"]);
+}
