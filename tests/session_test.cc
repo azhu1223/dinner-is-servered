@@ -39,12 +39,6 @@ TEST_F(SessionFixture, SessionSocket) {
 }
 
 
-/*TEST_F(SessionFixture, StartFunction) {
-    session s(io_service);
-    bool result = s.start();
-    EXPECT_TRUE(result);  
-}*/
-
 TEST_F(SessionFixture, DefaultProperties) {
     EXPECT_NE(&session_->socket(), nullptr);  // Ensures socket is not null
     // Other properties checks depending on initial conditions assumed by session

@@ -10,7 +10,6 @@
 #include "logging_buffer.h"
 #include <queue>
 
-
 namespace http = boost::beast::http;
 
 TEST(EchoHandlerTest, RequestHandlerTest) {

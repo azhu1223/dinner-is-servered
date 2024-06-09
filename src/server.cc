@@ -23,13 +23,6 @@ server::server(boost::asio::io_service& io_service, LoggingBuffer* logging_buffe
     signals_.async_wait(boost::bind(&server::kill_server, this));
     logging_buffer->addToBuffer(INFO, "Starting server on port " + port);
 
-    /*boost::asio::ip::tcp::resolver resolver(io_service_);
-    boost::asio::ip::tcp::resolver::query query(address, port);
-    boost::asio::ip::tcp::endpoint endpoint = *resolver.resolve(query);
-    acceptor_.open(endpoint.protocol());
-    acceptor_.set_option(boost::asio::ip::tcp::acceptor::reuse_address(true));
-    acceptor_.bind(endpoint);*/ 
-
     start_accept();
 }
 

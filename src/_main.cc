@@ -52,8 +52,6 @@ int main(int argc, char* argv[]) {
         Registry::RegisterRequestHandler(App, AppHandlerFactory::create);
 
 
-
-        
         boost::asio::io_service io_service;
 
         NginxConfig config;
@@ -64,7 +62,6 @@ int main(int argc, char* argv[]) {
             return 1;
         }
         ConfigInterpreter::setServerPaths(config);
-
 
         server s(io_service, &logging_buffer, THREADPOOL_SIZE, ConfigInterpreter::getPort(config));
 

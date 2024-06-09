@@ -19,10 +19,3 @@ class ServerTestFixture : public ::testing::Test
       delete lb;
     }
 };
-
-/*TEST_F(ServerTestFixture, StartAccept)
-{ 
-  server test_server(io_service, lb, 8080);
-  bool success = test_server.start_accept();
-  EXPECT_TRUE(success);
-}*/

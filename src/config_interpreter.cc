@@ -121,12 +121,6 @@ void ConfigInterpreter::setServerPaths(NginxConfig &config){
                         BOOST_LOG_TRIVIAL(info) << "Adding sleep path: " << location;
                         sleep_paths.push_back(location);
                     }
-                    
-                    //App Handler
-                    // else if (location_type == "AppHandler") {
-                    //     BOOST_LOG_TRIVIAL(info) << "Adding app path: " << location;
-                    //     app_paths.push_back(location);
-                    // }
 
                     else if (location_type == "AppHandler") {
                         bool found_gpt_url = false;
@@ -175,17 +169,9 @@ void ConfigInterpreter::setServerPaths(ServerPaths server_paths){
     server_paths_ = server_paths;
 }
 
-// void ConfigInterpreter::set_api_key(const std::string& api_key) {
-//     api_key_ = api_key;
-// }
-
 std::string ConfigInterpreter::get_api_key() {
     return api_key_;
 }
-
-// void ConfigInterpreter::set_chatgpt_url(const std::string& chatgpt_url) {
-//     chatgpt_url_ = chatgpt_url;
-// }
 
 std::string ConfigInterpreter::get_chatgpt_url() {
     return chatgpt_url_;
